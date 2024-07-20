@@ -20,9 +20,9 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import { visuallyHidden } from '@mui/utils';
 
-// function createData(id, name, calories, fat, carbs, protein) {
+// function createData(city_id, name, calories, fat, carbs, protein) {
 //   return {
-//     id,
+//     city_id,
 //     name,
 //     calories,
 //     fat,
@@ -135,7 +135,7 @@ function EnhancedTableHead(props) {
             checked={rowCount > 0 && numSelected === rowCount}
             onChange={onSelectAllClick}
             inputProps={{
-              'aria-label': 'select all desserts',
+              'aria-label': 'select all cities',
             }}
           />
         </TableCell>
@@ -243,9 +243,10 @@ const TableMain = () => {
   useEffect(() => {
     fetchData(`http://localhost:3000/api/cities`, setCityData);
   }, []);
-  console.log("cityData[0]: ", cityData[0]);
+  //console.log("cityData[0]: ", cityData[0]);
+  //rows[0].calories = 10000;
   const rows = cityData;
-  const fetchData = async (url, data_param) => { //data_param is supposed to be the setter from a useState
+  const fetchData = async (url, setData) => { //data_param is supposed to be the setter from a useState
     try {
       const response = await fetch(url);
       if (!response.ok) { // If the response status is not in the range 200-299 (success), throw an error
@@ -262,7 +263,7 @@ const TableMain = () => {
         }
       }
       const data = await response.json()
-      data_param(data);
+      setData(data);
     } catch {
 
     }
@@ -319,11 +320,11 @@ const TableMain = () => {
 
   const visibleRows = React.useMemo(
     () =>
-      stableSort(rows, getComparator(order, orderBy)).slice(
+      stableSort(cityData, getComparator(order, orderBy)).slice(
         page * rowsPerPage,
         page * rowsPerPage + rowsPerPage,
       ),
-    [order, orderBy, page, rowsPerPage],
+    [order, orderBy, page, rowsPerPage, rows],
   );
 
   if (error404Flag) {
@@ -362,7 +363,7 @@ const TableMain = () => {
             />
             <TableBody>
               {visibleRows.map((row, index) => {
-                const isItemSelected = isSelected(row.id);
+                const isItemSelected = isSelected(row.CityID);
                 const labelId = `enhanced-table-checkbox-${index}`;
 
                 return (
@@ -372,7 +373,7 @@ const TableMain = () => {
                     role="checkbox"
                     aria-checked={isItemSelected}
                     tabIndex={-1}
-                    key={row.id}
+                    key={row.CityID}
                     selected={isItemSelected}
                     sx={{ cursor: 'pointer' }}
                   >
@@ -391,12 +392,13 @@ const TableMain = () => {
                       scope="row"
                       padding="none"
                     >
-                      {row.name}
+                      {row.CityID}
                     </TableCell>
-                    <TableCell align="right">{row.calories}</TableCell>
-                    <TableCell align="right">{row.fat}</TableCell>
-                    <TableCell align="right">{row.carbs}</TableCell>
-                    <TableCell align="right">{row.protein}</TableCell>
+                    <TableCell align="right">{row.CityName}</TableCell>
+                    <TableCell align="right">{row.District}</TableCell>
+                    <TableCell align="right">{row.CityPopulation}</TableCell>
+                    <TableCell align="right">{row.CountryName}</TableCell>
+                    <TableCell align="right">{row.Region}</TableCell>
                   </TableRow>
                 );
               })}

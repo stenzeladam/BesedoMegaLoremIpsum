@@ -1,4 +1,4 @@
-require('dotenv').config({ path: '../.env' });
+require('dotenv').config();
 const express = require('express'); // Import Express.js framework
 const { createPool } = require('mysql2') // Destructuring createPool method from mysql2 module
 const app = express();
