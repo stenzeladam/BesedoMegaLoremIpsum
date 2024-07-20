@@ -277,7 +277,7 @@ const TableMain = () => {
 
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
-      const newSelected = rows.map((n) => n.id);
+      const newSelected = rows.map((n) => n.CityID);
       setSelected(newSelected);
       return;
     }
@@ -320,7 +320,7 @@ const TableMain = () => {
 
   const visibleRows = React.useMemo(
     () =>
-      stableSort(cityData, getComparator(order, orderBy)).slice(
+      stableSort(rows, getComparator(order, orderBy)).slice(
         page * rowsPerPage,
         page * rowsPerPage + rowsPerPage,
       ),
@@ -364,12 +364,13 @@ const TableMain = () => {
             <TableBody>
               {visibleRows.map((row, index) => {
                 const isItemSelected = isSelected(row.CityID);
+                console.log(selected);
                 const labelId = `enhanced-table-checkbox-${index}`;
 
                 return (
                   <TableRow
                     hover
-                    onClick={(event) => handleClick(event, row.id)}
+                    onClick={(event) => handleClick(event, row.CityID)}
                     role="checkbox"
                     aria-checked={isItemSelected}
                     tabIndex={-1}
