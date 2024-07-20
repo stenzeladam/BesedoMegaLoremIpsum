@@ -82,38 +82,33 @@ function stableSort(array, comparator) {
 const headCells = [
   {
     id: 'CityID',
+    align: 'left',
     numeric: true,
-    disablePadding: true,
     label: 'City ID',
   },
   {
     id: 'CityName',
     numeric: false,
-    disablePadding: false,
     label: 'City Name',
   },
   {
-    id: 'district',
+    id: 'District',
     numeric: false,
-    disablePadding: false,
     label: 'District',
   },
   {
-    id: 'Population',
+    id: 'CityPopulation',
     numeric: true,
-    disablePadding: false,
     label: 'Population',
   },
   {
-    id: 'countryName',
+    id: 'CountryName',
     numeric: false,
-    disablePadding: false,
     label: 'Country',
   },
   {
-    id: 'region',
+    id: 'Region',
     numeric: false,
-    disablePadding: false,
     label: 'Region'
   }
 ];
@@ -142,7 +137,7 @@ function EnhancedTableHead(props) {
         {headCells.map((headCell) => (
           <TableCell
             key={headCell.id}
-            align={headCell.numeric ? 'right' : 'left'}
+            align={'right'}
             padding={headCell.disablePadding ? 'none' : 'normal'}
             sortDirection={orderBy === headCell.id ? order : false}
           >
@@ -234,7 +229,7 @@ const TableMain = () => {
   const [orderBy, setOrderBy] = useState('Population');
   const [selected, setSelected] = useState([]);
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  const [rowsPerPage, setRowsPerPage] = React.useState(10);
   const [error404Flag, set404] = useState(false);
   const [error500Flag, set500] = useState(false);
   const [otherErrorFlag, setOtherError] = useState(false);
@@ -364,7 +359,6 @@ const TableMain = () => {
             <TableBody>
               {visibleRows.map((row, index) => {
                 const isItemSelected = isSelected(row.CityID);
-                console.log(selected);
                 const labelId = `enhanced-table-checkbox-${index}`;
 
                 return (
@@ -392,6 +386,7 @@ const TableMain = () => {
                       id={labelId}
                       scope="row"
                       padding="none"
+                      align="right"
                     >
                       {row.CityID}
                     </TableCell>
@@ -416,7 +411,7 @@ const TableMain = () => {
           </Table>
         </TableContainer>
         <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
+          rowsPerPageOptions={[10, 20, 30]}
           component="div"
           count={rows.length}
           rowsPerPage={rowsPerPage}
