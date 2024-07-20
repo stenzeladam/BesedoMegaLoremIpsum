@@ -5,7 +5,7 @@ import App from './App';
 document.addEventListener('DOMContentLoaded', () => {
   const heading = document.querySelector("#instructions");
   if (heading) {
-    heading.textContent = 'Select a root note, a mode, and a tuning:';
+    heading.textContent = 'Mega Lorem Ipsum';
   }
 });
 

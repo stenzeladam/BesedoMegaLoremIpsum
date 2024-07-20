@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config({ path: '../.env' });
 const express = require('express'); // Import Express.js framework
 const { createPool } = require('mysql2') // Destructuring createPool method from mysql2 module
 const app = express();
@@ -20,8 +20,7 @@ const pool = createPool({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    connectionLimit: 10
+    database: process.env.DB_NAME
 });
 
 // Route for the root URL
