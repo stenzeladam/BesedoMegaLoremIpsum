@@ -1,0 +1,14 @@
+SELECT 
+  world.city.ID AS CityID, 
+  world.city.Name AS CityName,
+  world.city.District,
+  world.city.Population AS CityPopulation,
+  world.country.Name AS CountryName,
+  world.country.Region
+FROM 
+  world.city
+JOIN 
+  world.country
+ON 
+  world.city.CountryCode = world.country.Code
+order by world.city.Population DESC;
