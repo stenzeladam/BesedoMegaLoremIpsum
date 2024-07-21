@@ -11,7 +11,8 @@ import Stack from '@mui/joy/Stack';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 
-const AddRowModal = ({ open, handleClose, selected }) => {
+const EditRowModal = ({ open, handleClose, id }) => {
+  const [cityID, setCityID] = useState('');
   const [cityName, setCityName] = useState('');
   const [district, setDistrict] = useState('');
   const [population, setPopulation] = useState('');
@@ -20,8 +21,8 @@ const AddRowModal = ({ open, handleClose, selected }) => {
   const [error, setError] = useState('');
 
   const handleSubmit = async (event) => {
-    event.stopPropagation();
-
+    
+    setCityID(id);
     event.preventDefault();
     event.stopPropagation();
 
@@ -32,7 +33,7 @@ const AddRowModal = ({ open, handleClose, selected }) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ 
-          selected: selected,
+          cityID: cityID,
           cityName: cityName, 
           district: district, 
           population: population, 
@@ -49,7 +50,6 @@ const AddRowModal = ({ open, handleClose, selected }) => {
     setPopulation('');
     setCountry('');
     setRegion('');
-    event.stopPropagation();
     handleClose(); // Close the modal
   };
 
@@ -131,4 +131,4 @@ const AddRowModal = ({ open, handleClose, selected }) => {
   );
 };
 
-export default AddRowModal;
+export default EditRowModal;

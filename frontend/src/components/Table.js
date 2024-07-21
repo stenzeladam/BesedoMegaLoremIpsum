@@ -54,12 +54,6 @@ function stableSort(array, comparator) {
 
 const headCells = [
   {
-    id: 'edit_col',
-    align: 'left',
-    numeric: false,
-    label: 'Edit',
-  },
-  {
     id: 'CityID',
     align: 'left',
     numeric: true,
@@ -89,6 +83,12 @@ const headCells = [
     id: 'Region',
     numeric: false,
     label: 'Region'
+  },
+  {
+    id: 'edit_col',
+    align: 'left',
+    numeric: false,
+    label: 'Edit',
   }
 ];
 
@@ -120,7 +120,7 @@ function EnhancedTableHead(props) {
             padding={headCell.disablePadding ? 'none' : 'normal'}
             sortDirection={orderBy === headCell.id ? order : false}
           >
-            {index === 0 ? (
+            {index === 6 ? (
               headCell.label
             ) : (
               <TableSortLabel
@@ -155,9 +155,7 @@ EnhancedTableHead.propTypes = {
 
 function EnhancedTableToolbar(props) {
   const { numSelected, selected } = props;
-
   const [isAddRecordModalOpen, setIsAddRecordModalOpen] = useState(false);
-  //const [isEditRecordModalOpen, setIsEditRecordModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isDeleteDisabled, setIsDeleteDisabled] = useState(true);
 
@@ -177,14 +175,6 @@ function EnhancedTableToolbar(props) {
   const handleAddRecordModalClose = () => {
     setIsAddRecordModalOpen(false);
   };
-
-  // const handleEdit = () => {
-  //   setIsEditRecordModalOpen(true);
-  // }
-
-  // const handleEditClose = () => {
-  //   setIsEditRecordModalOpen(false);
-  // }
 
   const handleDeleteDialog = () => {
     setIsDeleteDialogOpen(true);
@@ -225,7 +215,9 @@ function EnhancedTableToolbar(props) {
         </Typography>
       )}
       <Tooltip title="Add">
-        <IconButton onClick={handleAddRecordModal}>
+        <IconButton 
+          sx={{ color: 'green' }}
+          onClick={handleAddRecordModal}>
           <AddCircleOutlinedIcon/>
         </IconButton>
       </Tooltip>
@@ -235,6 +227,7 @@ function EnhancedTableToolbar(props) {
       <Tooltip title="Delete">
         <span>
           <IconButton 
+            sx={{ color: 'black' }}
             onClick={handleDeleteDialog}
             disabled={isDeleteDisabled}>
             <DeleteIcon/>
@@ -288,8 +281,8 @@ const TableMain = () => {
       }
       const data = await response.json()
       setData(data);
-    } catch {
-
+    } catch (error) {
+      console.error("Error: ", error);
     }
   }
 
@@ -299,7 +292,6 @@ const TableMain = () => {
   }
 
   const handleEditClose = (event) => {
-    event.stopPropagation();
     setIsEditRecordModalOpen(false);
   }
 
@@ -422,23 +414,12 @@ const TableMain = () => {
                         }}
                       />
                     </TableCell>
-                    <TableCell padding="none">
-                      <Tooltip title="Edit">
-                      <IconButton onClick={handleEdit}>
-                        <EditIcon/>
-                        </IconButton>
-                      </Tooltip>
-                      <EditRecordModal 
-                        open={isEditRecordModalOpen} 
-                        handleClose={handleEditClose} 
-                      />
-                    </TableCell>
                     <TableCell
                       component="th"
                       id={labelId}
                       scope="row"
                       padding="none"
-                      align="right"
+                      align="center"
                     >
                       {row.CityID}
                     </TableCell>
@@ -447,6 +428,18 @@ const TableMain = () => {
                     <TableCell align="right">{row.CityPopulation}</TableCell>
                     <TableCell align="right">{row.CountryName}</TableCell>
                     <TableCell align="right">{row.Region}</TableCell>
+                    <TableCell align="right" padding="none">
+                      <Tooltip title="Edit">
+                      <IconButton onClick={handleEdit}>
+                        <EditIcon/>
+                        </IconButton>
+                      </Tooltip>
+                      <EditRecordModal 
+                        open={isEditRecordModalOpen} 
+                        handleClose={handleEditClose}
+                        id={row.CityID} 
+                      />
+                    </TableCell>
                   </TableRow>
                 );
               })}

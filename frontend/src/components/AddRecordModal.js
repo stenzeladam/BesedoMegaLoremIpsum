@@ -23,6 +23,12 @@ const AddRowModal = ({ open, handleClose }) => {
     event.preventDefault();
 
     try {
+
+      if (!Number.isInteger(Number(population))) {
+        setError('Population must be an integer');
+        return;
+      }
+      
       const response = await fetch('http://localhost:3000/api/cities/add', {
         method: 'POST',
         headers: {
