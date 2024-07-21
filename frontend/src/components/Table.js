@@ -286,12 +286,14 @@ const TableMain = () => {
     }
   }
 
-  const handleEdit = (event) => {
+  const handleEdit = (event, row) => {
     event.stopPropagation();
+    setSelected([row.id])
     setIsEditRecordModalOpen(true);
   }
 
   const handleEditClose = (event) => {
+    setSelected([]);
     setIsEditRecordModalOpen(false);
   }
 
@@ -370,12 +372,12 @@ const TableMain = () => {
   }
 
   return (
-    <Box sx={{ width: '100%' }}>
+    <Box sx={{ margin: '2rem' }}>
       <Paper sx={{ width: '100%', mb: 2 }}>
         <EnhancedTableToolbar 
           numSelected={selected.length} 
           selected={selected}/>
-        <TableContainer>
+        <TableContainer >
           <Table
             sx={{ minWidth: 750 }}
             aria-labelledby="tableTitle"
@@ -430,15 +432,10 @@ const TableMain = () => {
                     <TableCell align="right">{row.Region}</TableCell>
                     <TableCell align="right" padding="none">
                       <Tooltip title="Edit">
-                      <IconButton onClick={handleEdit}>
+                      <IconButton onClick={(event) => handleEdit(event, row)}>
                         <EditIcon/>
                         </IconButton>
                       </Tooltip>
-                      <EditRecordModal 
-                        open={isEditRecordModalOpen} 
-                        handleClose={handleEditClose}
-                        id={row.CityID} 
-                      />
                     </TableCell>
                   </TableRow>
                 );
@@ -454,6 +451,11 @@ const TableMain = () => {
               )}
             </TableBody>
           </Table>
+          <EditRecordModal 
+            open={isEditRecordModalOpen} 
+            handleClose={handleEditClose}
+            id={selected[0]} 
+          />
         </TableContainer>
         <TablePagination
           rowsPerPageOptions={[10, 20, 30]}

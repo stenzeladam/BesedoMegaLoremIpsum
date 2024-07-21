@@ -47,7 +47,6 @@ app.get('/api/cities', (req, res) => {
         if (err) {
             console.error(err);
             res.status(500).send('500 Error: Internal Server Error');
-            return;
         }
         res.send(citiesArray); //send the fetched cities data as a response
         console.log('200 OK');
@@ -91,7 +90,8 @@ function insertCountry(cityName, district, population, country, region) {
     pool.query(
         `INSERT INTO world.country (Code, Name, Region) VALUES (?, ?, ?)`,
         [newCode, country, region],
-        (err) => {
+        (err, result) => {
+            console.log(`result1: ${JSON.stringify(result)}`);
             if (err) {
                 console.error(err);
                 return;
@@ -100,13 +100,11 @@ function insertCountry(cityName, district, population, country, region) {
             pool.query(
                 `INSERT INTO world.city (Name, CountryCode, District, Population) VALUES (?, ?, ?, ?)`,
                 [cityName, newCode, district, population],
-                (err) => {
+                (err, result2) => {
+                    console.log(`result2: ${JSON.stringify(result2)}`);
                     if (err) {
                         console.error(err);
-                        returnstatus(500).send('500 Error: Internal Server Error');
-                        return;
                     }
-                    return;
                 }
             );
         }
@@ -123,11 +121,9 @@ app.post('/api/cities/add', (req, res) => {
     try {
         insertCountry(cityName, district, population, country, region);
         res.status(200).send({ message: 'status 200: Successfully added data' });
-        return;
     } catch (error) {
         console.error('Error adding the entry: ', error);
         res.status(500).send({ message: '500 Error: Internal server error, could not add data' });
-        return;
     }
 });
 
@@ -169,7 +165,6 @@ app.put('/api/cities/edit', async (req, res) => {
     if (!cityID || !cityName || !district || !population || !country || !region) {
         return res.status(400).send('400 Bad Request: Incomplete data');
     }
-
     // first, check if the country entered has an existing country code
     // if the country code exists, simply update the table
     // if the country/country code does not exist, you need to generate a country code for the entered country
