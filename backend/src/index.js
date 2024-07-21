@@ -68,7 +68,7 @@ app.post('/api/cities/add', (req, res) => {
     
     pool.query(
         `SELECT Code FROM world.country WHERE Name = ?`,
-        [country],
+        [country], //parameterized, and need to get the country code first in order to add to the world.city table
         (err, result) => {
             if (err) {
                 console.error(err);
@@ -81,7 +81,7 @@ app.post('/api/cities/add', (req, res) => {
             pool.query(
                 `INSERT INTO world.city (Name, CountryCode, District, Population)
                 VALUES (?, ?, ?, ?)`,
-                [cityName, countryCode, district, population],
+                [cityName, countryCode, district, population], //parameterized 
                 (err, arr) => {
                     if (err) {
                         console.error(err);
@@ -96,31 +96,34 @@ app.post('/api/cities/add', (req, res) => {
     );
 });
 
-app.post('/api/cities/check-id', (req, res) => {
-    const { id } = req.body;
-
-    if (!id) {
-        return res.status(400).send('400 Bad Request: ID is required');
+app.delete('/api/cities/delete', async (req, res) => {
+    const { selected } = req.body;
+    if (!selected) {
+        return res.status(400).send('No selection to delete');
     }
 
-    pool.query(
-        `SELECT ID FROM world.city WHERE ID = ?`, // Parameterized query to avoid SQL injection
-        [id], // Parameters array
-        (err, resultArray) => {
-            if (err) {
-                console.error(err);
-                return res.status(500).send('500 Error: Internal Server Error');
-            }
-
-            if (resultArray.length > 0) {
-                // Entry exists
-                return res.status(200).send({ exists: true });
-            } else {
-                // No entry found
-                return res.status(200).send({ exists: false });
-            }
+    try {
+        for (let i = 0; i < selected.length; i++) {
+            let id = selected[i];
+            pool.query(
+                `DELETE FROM world.city WHERE world.city.ID = ?`,
+                [id],
+                (err, arr) => {
+                    if (err) {
+                        console.error(err);
+                        res.status(500).send('500 Error: Internal Server Error');
+                        return;
+                    }
+                    res.send(arr);
+                    console.log('200 OK');
+                }
+            )
         }
-    );
+    } catch (error) {
+        console.error('Error deleting selection', error);
+        res.status(500).send('500 Error: Internal Server Error');
+        return;
+    }
 });
 
 app.use((req, res) => {

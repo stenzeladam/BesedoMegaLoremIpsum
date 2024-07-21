@@ -1,26 +1,24 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import { alpha } from '@mui/material/styles';
+import { alpha } from '@mui/material/styles'
+import { TableRow, TableCell, Checkbox, IconButton, Tooltip } from '@mui/material';
 import Box from '@mui/material/Box';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TablePagination from '@mui/material/TablePagination';
-import TableRow from '@mui/material/TableRow';
 import TableSortLabel from '@mui/material/TableSortLabel';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
-import Checkbox from '@mui/material/Checkbox';
-import IconButton from '@mui/material/IconButton';
-import Tooltip from '@mui/material/Tooltip';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddCircleOutlinedIcon from '@mui/icons-material/AddCircleOutlined';
 import EditIcon from '@mui/icons-material/Edit';
 import { visuallyHidden } from '@mui/utils';
 import AddRecordModal from './AddRecordModal'
+import EditRecordModal from './EditRecordModal'
+import DeleteRecordDialog from './DeleteRecordDialog'
 
 function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
@@ -56,6 +54,12 @@ function stableSort(array, comparator) {
 
 const headCells = [
   {
+    id: 'edit_col',
+    align: 'left',
+    numeric: false,
+    label: 'Edit',
+  },
+  {
     id: 'CityID',
     align: 'left',
     numeric: true,
@@ -89,8 +93,8 @@ const headCells = [
 ];
 
 function EnhancedTableHead(props) {
-  const { onSelectAllClick, order, orderBy, numSelected, rowCount, onRequestSort } =
-    props;
+  const { onSelectAllClick, order, orderBy, numSelected, rowCount, onRequestSort } = props;
+
   const createSortHandler = (property) => (event) => {
     onRequestSort(event, property);
   };
@@ -109,31 +113,36 @@ function EnhancedTableHead(props) {
             }}
           />
         </TableCell>
-        {headCells.map((headCell) => (
+        {headCells.map((headCell, index) => (
           <TableCell
             key={headCell.id}
             align={'right'}
             padding={headCell.disablePadding ? 'none' : 'normal'}
             sortDirection={orderBy === headCell.id ? order : false}
           >
-            <TableSortLabel
-              active={orderBy === headCell.id}
-              direction={orderBy === headCell.id ? order : 'asc'}
-              onClick={createSortHandler(headCell.id)}
-            >
-              {headCell.label}
-              {orderBy === headCell.id ? (
-                <Box component="span" sx={visuallyHidden}>
-                  {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
-                </Box>
-              ) : null}
-            </TableSortLabel>
+            {index === 0 ? (
+              headCell.label
+            ) : (
+              <TableSortLabel
+                active={orderBy === headCell.id}
+                direction={orderBy === headCell.id ? order : 'asc'}
+                onClick={createSortHandler(headCell.id)}
+              >
+                {headCell.label}
+                {orderBy === headCell.id ? (
+                  <Box component="span" sx={visuallyHidden}>
+                    {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
+                  </Box>
+                ) : null}
+              </TableSortLabel>
+            )}
           </TableCell>
         ))}
       </TableRow>
     </TableHead>
   );
 }
+
 
 EnhancedTableHead.propTypes = {
   numSelected: PropTypes.number.isRequired,
@@ -145,11 +154,23 @@ EnhancedTableHead.propTypes = {
 };
 
 function EnhancedTableToolbar(props) {
-  const { numSelected } = props;
+  const { numSelected, selected } = props;
+
   const [isAddRecordModalOpen, setIsAddRecordModalOpen] = useState(false);
+  //const [isEditRecordModalOpen, setIsEditRecordModalOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeleteDisabled, setIsDeleteDisabled] = useState(true);
+
+  useEffect(() => {
+    if (selected.length > 0) {
+      setIsDeleteDisabled(false);
+    }
+    else {
+      setIsDeleteDisabled(true);
+    }
+  })
 
   const handleAddRecordModal = () => {
-    
     setIsAddRecordModalOpen(true);
   };
 
@@ -157,9 +178,21 @@ function EnhancedTableToolbar(props) {
     setIsAddRecordModalOpen(false);
   };
 
-  const handleDelete = () => {
-    
-  };
+  // const handleEdit = () => {
+  //   setIsEditRecordModalOpen(true);
+  // }
+
+  // const handleEditClose = () => {
+  //   setIsEditRecordModalOpen(false);
+  // }
+
+  const handleDeleteDialog = () => {
+    setIsDeleteDialogOpen(true);
+  }
+
+  const handleDeleteDialogClose = () => {
+    setIsDeleteDialogOpen(false);
+  } 
 
   return (
     <Toolbar
@@ -196,23 +229,29 @@ function EnhancedTableToolbar(props) {
           <AddCircleOutlinedIcon/>
         </IconButton>
       </Tooltip>
-      <AddRecordModal open={isAddRecordModalOpen} handleClose={handleAddRecordModalClose} />
-      <Tooltip title="Edit">
-        <IconButton onClick={handleDelete}>
-          <EditIcon/>
-        </IconButton>
-      </Tooltip>
+      <AddRecordModal 
+        open={isAddRecordModalOpen} 
+        handleClose={handleAddRecordModalClose} />
       <Tooltip title="Delete">
-        <IconButton onClick={handleDelete}>
-          <DeleteIcon/>
-        </IconButton>
+        <span>
+          <IconButton 
+            onClick={handleDeleteDialog}
+            disabled={isDeleteDisabled}>
+            <DeleteIcon/>
+          </IconButton>
+        </span>
       </Tooltip>
+      <DeleteRecordDialog 
+        open={isDeleteDialogOpen} 
+        handleClose={handleDeleteDialogClose} 
+        selected={selected}/>
     </Toolbar>
   );
 }
 
 EnhancedTableToolbar.propTypes = {
   numSelected: PropTypes.number.isRequired,
+  selected: PropTypes.any.isRequired
 };
 
 const TableMain = () => {
@@ -225,12 +264,11 @@ const TableMain = () => {
   const [error500Flag, set500] = useState(false);
   const [otherErrorFlag, setOtherError] = useState(false);
   const [cityData, setCityData] = useState([]);
+  const [isEditRecordModalOpen, setIsEditRecordModalOpen] = useState(false);
 
   useEffect(() => {
     fetchData(`http://localhost:3000/api/cities`, setCityData);
   }, []);
-  //console.log("cityData[0]: ", cityData[0]);
-  //rows[0].calories = 10000;
   const rows = cityData;
   const fetchData = async (url, setData) => { //data_param is supposed to be the setter from a useState
     try {
@@ -253,6 +291,16 @@ const TableMain = () => {
     } catch {
 
     }
+  }
+
+  const handleEdit = (event) => {
+    event.stopPropagation();
+    setIsEditRecordModalOpen(true);
+  }
+
+  const handleEditClose = (event) => {
+    event.stopPropagation();
+    setIsEditRecordModalOpen(false);
   }
 
   const handleRequestSort = (event, property) => {
@@ -332,7 +380,9 @@ const TableMain = () => {
   return (
     <Box sx={{ width: '100%' }}>
       <Paper sx={{ width: '100%', mb: 2 }}>
-        <EnhancedTableToolbar numSelected={selected.length} />
+        <EnhancedTableToolbar 
+          numSelected={selected.length} 
+          selected={selected}/>
         <TableContainer>
           <Table
             sx={{ minWidth: 750 }}
@@ -370,6 +420,17 @@ const TableMain = () => {
                         inputProps={{
                           'aria-labelledby': labelId,
                         }}
+                      />
+                    </TableCell>
+                    <TableCell padding="none">
+                      <Tooltip title="Edit">
+                      <IconButton onClick={handleEdit}>
+                        <EditIcon/>
+                        </IconButton>
+                      </Tooltip>
+                      <EditRecordModal 
+                        open={isEditRecordModalOpen} 
+                        handleClose={handleEditClose} 
                       />
                     </TableCell>
                     <TableCell
