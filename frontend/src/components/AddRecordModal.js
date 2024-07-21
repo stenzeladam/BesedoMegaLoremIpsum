@@ -10,10 +10,8 @@ import DialogContent from '@mui/joy/DialogContent';
 import Stack from '@mui/joy/Stack';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
-import axios from 'axios';
 
 const AddRowModal = ({ open, handleClose }) => {
-  const [cityID, setCityID] = useState('');
   const [cityName, setCityName] = useState('');
   const [district, setDistrict] = useState('');
   const [population, setPopulation] = useState('');
@@ -21,45 +19,27 @@ const AddRowModal = ({ open, handleClose }) => {
   const [region, setRegion] = useState('');
   const [error, setError] = useState('');
 
-  const checkCityIDUnique = async (id) => {
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
     try {
-      const response = await fetch('http://localhost:3000/api/cities/check-id', { 
+      const response = await fetch('http://localhost:3000/api/cities/add', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ id }) 
+        body: JSON.stringify({ 
+          cityName: cityName, 
+          district: district, 
+          population: population, 
+          country: country, 
+          region: region 
+        })
       });
       const data = await response.json();
-      return !data.exists;
     } catch (error) {
-      console.error('Error checking City ID uniqueness:', error);
-      return false;
+      console.error('Error adding data', error);
     }
-  };
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-
-    const isUnique = await checkCityIDUnique(cityID);
-
-    if (!isUnique) {
-      setError('The City ID is already in use. Please choose a different ID.');
-      return;
-    }
-
-    // Clear error if ID is unique
-    setError('');
-
-    // Perform your submit logic here
-    console.log('City ID:', cityID);
-    console.log('City Name:', cityName);
-    console.log('District:', district);
-    console.log('Population:', population);
-    console.log('Country:', country);
-    console.log('Region:', region);
-    
-    setCityID('');
     setCityName('');
     setDistrict('');
     setPopulation('');
@@ -69,7 +49,6 @@ const AddRowModal = ({ open, handleClose }) => {
   };
 
   const handleExit = () => {
-    setCityID('');
     setCityName('');
     setDistrict('');
     setPopulation('');
@@ -97,15 +76,6 @@ const AddRowModal = ({ open, handleClose }) => {
         <DialogContent>Fill in the information for the table</DialogContent>
         <form onSubmit={handleSubmit}>
           <Stack spacing={2}>
-            <FormControl>
-              <FormLabel>City ID</FormLabel>
-              <Input
-                autoFocus
-                required
-                value={cityID}
-                onChange={(e) => setCityID(e.target.value)}
-              />
-            </FormControl>
             <FormControl>
               <FormLabel>City Name</FormLabel>
               <Input

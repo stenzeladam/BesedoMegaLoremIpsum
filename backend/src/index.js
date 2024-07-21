@@ -54,6 +54,48 @@ app.get('/api/cities', (req, res) => {
     });
 });
 
+app.post('/api/cities/add', (req, res) => {
+    const { 
+        cityName: cityName, 
+        district: district, 
+        population: population, 
+        country: country, 
+        region: region 
+      } = req.body;
+      if (!cityName || !district || !population || !country || !region) {
+        return res.status(400).send('400 Bad Request: Incomplete data');
+      }
+    
+    pool.query(
+        `SELECT Code FROM world.country WHERE Name = ?`,
+        [country],
+        (err, result) => {
+            if (err) {
+                console.error(err);
+                return res.status(500).send('500 Error: Internal Server Error');
+            }
+            if (result.length === 0) {
+                return res.status(404).send('404 Not Found: Country not found');
+            }
+            const countryCode = result[0].Code;
+            pool.query(
+                `INSERT INTO world.city (Name, CountryCode, District, Population)
+                VALUES (?, ?, ?, ?)`,
+                [cityName, countryCode, district, population],
+                (err, arr) => {
+                    if (err) {
+                        console.error(err);
+                        res.status(500).send('500 Error: Internal Server Error');
+                        return;
+                    }
+                    res.send(arr);
+                    console.log('200 OK');
+                }
+            )  
+        }
+    );
+});
+
 app.post('/api/cities/check-id', (req, res) => {
     const { id } = req.body;
 
