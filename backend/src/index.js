@@ -2,7 +2,9 @@ require('dotenv').config();
 const express = require('express'); // Import Express.js framework
 const { createPool } = require('mysql2') // Destructuring createPool method from mysql2 module
 const app = express();
+const cors = require('cors');
 app.use(express.json());
+app.use(cors());
 app.use(function(req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
@@ -50,6 +52,33 @@ app.get('/api/cities', (req, res) => {
         res.send(citiesArray); //send the fetched cities data as a response
         console.log('200 OK');
     });
+});
+
+app.post('/api/cities/check-id', (req, res) => {
+    const { id } = req.body;
+
+    if (!id) {
+        return res.status(400).send('400 Bad Request: ID is required');
+    }
+
+    pool.query(
+        `SELECT ID FROM world.city WHERE ID = ?`, // Parameterized query to avoid SQL injection
+        [id], // Parameters array
+        (err, resultArray) => {
+            if (err) {
+                console.error(err);
+                return res.status(500).send('500 Error: Internal Server Error');
+            }
+
+            if (resultArray.length > 0) {
+                // Entry exists
+                return res.status(200).send({ exists: true });
+            } else {
+                // No entry found
+                return res.status(200).send({ exists: false });
+            }
+        }
+    );
 });
 
 app.use((req, res) => {
