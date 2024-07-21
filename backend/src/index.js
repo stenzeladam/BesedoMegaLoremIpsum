@@ -131,52 +131,59 @@ app.post('/api/cities/add', (req, res) => {
     }
 });
 
+function isCountryInDatabase(country) {
+    if (!country) {
+      return Promise.resolve(false);
+    }
+  
+    return new Promise((resolve, reject) => {
+      pool.query(
+        `SELECT 1 FROM world.country WHERE Name = ?`,
+        [country],
+        (err, result) => {
+          if (err) {
+            console.error(err);
+            return reject(false);
+          }
+          if (result.length > 0) {
+            resolve(true); // country is found
+          } else {
+            resolve(false); // country is not found
+          }
+        }
+      );
+    });
+}
+  
 
 app.put('/api/cities/edit', async (req, res) => {
     const { 
-        cityID: cityID,
-        cityName: cityName, 
-        district: district, 
-        population: population, 
-        country: country, 
-        region: region 
+        cityID, 
+        cityName, 
+        district, 
+        population, 
+        country, 
+        region 
       } = req.body;
+      console.log(`Destructured: ${[cityID, cityName, district, population, country, region]}`);
     if (!cityID || !cityName || !district || !population || !country || !region) {
         return res.status(400).send('400 Bad Request: Incomplete data');
     }
+
+    // first, check if the country entered has an existing country code
+    // if the country code exists, simply update the table
+    // if the country/country code does not exist, you need to generate a country code for the entered country
+    // add the country/country code to world.countries
+    // keep track of the country code for the old entry that is being overwritten,
+    // if there are no entries in world.city with the old country code, delete the old country code
     try {
-        pool.query(
-            `SELECT world.city.CountryCode FROM world.city WHERE world.city.ID = ?`,
-            [country],
-            (err, result) => {
-                if (err) {
-                    console.error(err);
-                    return res.status(500).send('500 Error: Internal Server Error');
-                }
-                if (result.length === 0) {
-                    return res.status(404).send('404 Not Found: Country not found');
-                }
-                const countryCode = result[0].Code;
-                pool.query(
-                    `UPDATE world.city
-                    SET world.city.Name = ?, world.city.District = ?, world.city.Population = ?,
-                    WHERE world.city.ID = ?;`,
-                    [cityName, district, population, cityID],
-                    (err, arr ) => {
-                        if (err) {
-                            console.error(err);
-                            res.status(500).send('501 Error: Internal Server Error');
-                            return;
-                        }
-                        res.status(200).send(arr, 'Data updated successfully');
-                        console.log('200 OK');
-                    }
-                )
-            }
-        );
+        const exists = await isCountryInDatabase(country);
+        console.log(`Country exists: ${exists}`);
+        return res.status(200).send('Country existence checked successfully');
     } catch (error) {
         console.error('Error updating city and country:', error);
         res.status(500).send('500 Internal Server Error: Could not update city and country');
+        return res.status(500).send('500 Internal Server Error: Could not update city and country');
     }
 });
 

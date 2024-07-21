@@ -43,6 +43,7 @@ const AddRowModal = ({ open, handleClose }) => {
         })
       });
       const data = await response.json();
+      console.log(data);
     } catch (error) {
       console.error('Error adding data', error);
     }
@@ -51,6 +52,7 @@ const AddRowModal = ({ open, handleClose }) => {
     setPopulation('');
     setCountry('');
     setRegion('');
+    setError('');
     handleClose(); // Close the modal
   };
 
@@ -60,6 +62,7 @@ const AddRowModal = ({ open, handleClose }) => {
     setPopulation('');
     setCountry('');
     setRegion('');
+    setError('');
     handleClose();
   }
 

@@ -227,7 +227,7 @@ function EnhancedTableToolbar(props) {
       <Tooltip title="Delete">
         <span>
           <IconButton 
-            sx={{ color: 'black' }}
+            sx={{ color: 'red' }}
             onClick={handleDeleteDialog}
             disabled={isDeleteDisabled}>
             <DeleteIcon/>

@@ -27,8 +27,14 @@ const EditRowModal = ({ open, handleClose, id }) => {
     event.stopPropagation();
 
     try {
+
+      if (!Number.isInteger(Number(population))) {
+        setError('Population must be an integer');
+        return;
+      }
+
       const response = await fetch('http://localhost:3000/api/cities/edit', {
-        method: 'POST',
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -50,6 +56,7 @@ const EditRowModal = ({ open, handleClose, id }) => {
     setPopulation('');
     setCountry('');
     setRegion('');
+    setError('');
     handleClose(); // Close the modal
   };
 
@@ -59,6 +66,7 @@ const EditRowModal = ({ open, handleClose, id }) => {
     setPopulation('');
     setCountry('');
     setRegion('');
+    setError('');
     event.stopPropagation();
     handleClose();
   }
