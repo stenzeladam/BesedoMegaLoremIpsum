@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { alpha } from '@mui/material/styles'
-import { TableRow, TableCell, Checkbox, IconButton, Tooltip } from '@mui/material';
+import { TableRow, TableCell, Checkbox } from '@mui/material';
 import Box from '@mui/material/Box';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -12,7 +12,6 @@ import TableSortLabel from '@mui/material/TableSortLabel';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
-import EditIcon from '@mui/icons-material/Edit';
 import { visuallyHidden } from '@mui/utils';
 import AddRecordModal from './AddRecordModal'
 import EditRecordModal from './EditRecordModal'
@@ -84,7 +83,7 @@ const headCells = [
   },
   {
     id: 'edit_col',
-    align: 'left',
+    align: 'right',
     numeric: false,
     label: 'Edit',
   }
@@ -163,6 +162,8 @@ function EnhancedTableToolbar(props) {
           bgcolor: (theme) =>
             alpha(theme.palette.primary.main, theme.palette.action.activatedOpacity),
         }),
+        border: '2px solid', 
+        borderColor: (theme) => theme.palette.divider
       }}
     >
       {numSelected > 0 ? (
@@ -180,6 +181,7 @@ function EnhancedTableToolbar(props) {
           variant="h6"
           id="tableTitle"
           component="div"
+          align='center'
         >
           Cities of the World
         </Typography>
@@ -207,8 +209,6 @@ const TableMain = () => {
   const [error500Flag, set500] = useState(false);
   const [otherErrorFlag, setOtherError] = useState(false);
   const [cityData, setCityData] = useState([]);
-  const [isEditRecordModalOpen, setIsEditRecordModalOpen] = useState(false);
-  const [rowsHook, setRowsHook] = useState([]);
 
   useEffect(() => {
     fetchData(`http://localhost:3000/api/cities`, setCityData);
@@ -236,19 +236,6 @@ const TableMain = () => {
     } catch (error) {
       console.error("Error: ", error);
     }
-  }
-
-  const handleEdit = (event, row) => {
-    event.stopPropagation();
-    setSelected([row.CityID]);
-    setRowsHook([row]);
-    setIsEditRecordModalOpen(true);
-  }
-
-  const handleEditClose = (event) => {
-    setSelected([]);
-    setRowsHook([]);
-    setIsEditRecordModalOpen(false);
   }
 
   const handleRequestSort = (event, property) => {
@@ -349,7 +336,7 @@ const TableMain = () => {
               {visibleRows.map((row, index) => {
                 const isItemSelected = isSelected(row.CityID);
                 const labelId = `enhanced-table-checkbox-${index}`;
-
+                
                 return (
                   <TableRow
                     hover
@@ -384,12 +371,12 @@ const TableMain = () => {
                     <TableCell align="right">{row.CityPopulation}</TableCell>
                     <TableCell align="right">{row.CountryName}</TableCell>
                     <TableCell align="right">{row.Region}</TableCell>
-                    <TableCell align="right" padding="none">
-                      <Tooltip title="Edit">
-                      <IconButton onClick={(event) => handleEdit(event, row)}>
-                        <EditIcon/>
-                        </IconButton>
-                      </Tooltip>
+                    <TableCell align="right" padding='none'></TableCell>
+                    <TableCell >
+                      <EditRecordModal
+                        align="left"
+                        row={row}
+                      />
                     </TableCell>
                   </TableRow>
                 );
@@ -405,11 +392,6 @@ const TableMain = () => {
               )}
             </TableBody>
           </Table>
-          <EditRecordModal 
-            open={isEditRecordModalOpen} 
-            handleClose={handleEditClose}
-            rows={rowsHook[0]}
-          />
         </TableContainer>
         <TablePagination
           rowsPerPageOptions={[10, 20, 30]}
