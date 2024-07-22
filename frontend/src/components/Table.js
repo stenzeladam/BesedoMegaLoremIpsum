@@ -12,7 +12,6 @@ import TableSortLabel from '@mui/material/TableSortLabel';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
-import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import { visuallyHidden } from '@mui/utils';
 import AddRecordModal from './AddRecordModal'
@@ -154,25 +153,6 @@ EnhancedTableHead.propTypes = {
 
 function EnhancedTableToolbar(props) {
   const { numSelected, selected } = props;
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [isDeleteDisabled, setIsDeleteDisabled] = useState(true);
-
-  useEffect(() => {
-    if (selected.length > 0) {
-      setIsDeleteDisabled(false);
-    }
-    else {
-      setIsDeleteDisabled(true);
-    }
-  }, [selected.length])
-
-  const handleDeleteDialog = () => {
-    setIsDeleteDialogOpen(true);
-  }
-
-  const handleDeleteDialogClose = () => {
-    setIsDeleteDialogOpen(false);
-  } 
 
   return (
     <Toolbar
@@ -205,21 +185,7 @@ function EnhancedTableToolbar(props) {
         </Typography>
       )}
       <AddRecordModal/>
-      <Tooltip title="Delete">
-        <span>
-          <IconButton 
-            sx={{ color: 'red' }}
-            onClick={handleDeleteDialog}
-            disabled={isDeleteDisabled}
-          >
-            <DeleteIcon/>
-          </IconButton>
-        </span>
-      </Tooltip>
-  
       <DeleteRecordDialog 
-        open={isDeleteDialogOpen} 
-        handleClose={handleDeleteDialogClose} 
         selected={selected}
       />
     </Toolbar>
