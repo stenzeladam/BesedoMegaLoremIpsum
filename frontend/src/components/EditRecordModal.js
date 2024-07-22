@@ -59,6 +59,7 @@ const EditRowModal = ({ open, handleClose, rows }) => {
         })
       });
       const data = await response.json();
+      console.log(data);
     } catch (error) {
       console.error('Error adding data', error);
     }

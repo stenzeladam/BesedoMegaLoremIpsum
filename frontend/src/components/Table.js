@@ -166,7 +166,7 @@ function EnhancedTableToolbar(props) {
     else {
       setIsDeleteDisabled(true);
     }
-  })
+  }, [selected.length])
 
   const handleAddRecordModal = () => {
     setIsAddRecordModalOpen(true);
