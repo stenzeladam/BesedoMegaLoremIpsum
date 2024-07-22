@@ -13,7 +13,6 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import DeleteIcon from '@mui/icons-material/Delete';
-import AddCircleOutlinedIcon from '@mui/icons-material/AddCircleOutlined';
 import EditIcon from '@mui/icons-material/Edit';
 import { visuallyHidden } from '@mui/utils';
 import AddRecordModal from './AddRecordModal'
@@ -155,7 +154,6 @@ EnhancedTableHead.propTypes = {
 
 function EnhancedTableToolbar(props) {
   const { numSelected, selected } = props;
-  const [isAddRecordModalOpen, setIsAddRecordModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isDeleteDisabled, setIsDeleteDisabled] = useState(true);
 
@@ -167,14 +165,6 @@ function EnhancedTableToolbar(props) {
       setIsDeleteDisabled(true);
     }
   }, [selected.length])
-
-  const handleAddRecordModal = () => {
-    setIsAddRecordModalOpen(true);
-  };
-
-  const handleAddRecordModalClose = () => {
-    setIsAddRecordModalOpen(false);
-  };
 
   const handleDeleteDialog = () => {
     setIsDeleteDialogOpen(true);
@@ -214,30 +204,24 @@ function EnhancedTableToolbar(props) {
           Cities of the World
         </Typography>
       )}
-      <Tooltip title="Add">
-        <IconButton 
-          sx={{ color: 'green' }}
-          onClick={handleAddRecordModal}>
-          <AddCircleOutlinedIcon/>
-        </IconButton>
-      </Tooltip>
-      <AddRecordModal 
-        open={isAddRecordModalOpen} 
-        handleClose={handleAddRecordModalClose} />
+      <AddRecordModal/>
       <Tooltip title="Delete">
         <span>
           <IconButton 
             sx={{ color: 'red' }}
             onClick={handleDeleteDialog}
-            disabled={isDeleteDisabled}>
+            disabled={isDeleteDisabled}
+          >
             <DeleteIcon/>
           </IconButton>
         </span>
       </Tooltip>
+  
       <DeleteRecordDialog 
         open={isDeleteDialogOpen} 
         handleClose={handleDeleteDialogClose} 
-        selected={selected}/>
+        selected={selected}
+      />
     </Toolbar>
   );
 }

@@ -3,7 +3,7 @@ import Button from '@mui/joy/Button';
 import FormControl from '@mui/joy/FormControl';
 import FormLabel from '@mui/joy/FormLabel';
 import Input from '@mui/joy/Input';
-import Modal from '@mui/joy/Modal';
+import Modal from '@mui/material/Modal';
 import ModalDialog from '@mui/joy/ModalDialog';
 import DialogTitle from '@mui/joy/DialogTitle';
 import DialogContent from '@mui/joy/DialogContent';
@@ -13,8 +13,9 @@ import CloseIcon from '@mui/icons-material/Close';
 import PropTypes from 'prop-types';
 import Backdrop from '@mui/material/Backdrop';
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { useSpring, animated } from '@react-spring/web';
+import AddCircleOutlinedIcon from '@mui/icons-material/AddCircleOutlined';
+import { Tooltip } from '@mui/material';
 
 const Fade = React.forwardRef(function Fade(props, ref) {
   const {
@@ -57,25 +58,15 @@ Fade.propTypes = {
   ownerState: PropTypes.any,
 };
 
-const style = {
-  position: 'absolute',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  width: 400,
-  bgcolor: 'background.paper',
-  border: '2px solid #000',
-  boxShadow: 24,
-  p: 4,
-};
-
-const AddRowModal = ({ open, handleClose }) => {
+const AddRowModal = () => {
   const [cityName, setCityName] = useState('');
   const [district, setDistrict] = useState('');
   const [population, setPopulation] = useState('');
   const [country, setCountry] = useState('');
   const [region, setRegion] = useState('');
   const [error, setError] = useState('');
+  const [open, setOpen] = React.useState(false);
+  const handleOpen = () => setOpen(true);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -113,37 +104,44 @@ const AddRowModal = ({ open, handleClose }) => {
     handleClose(); // Close the modal
   };
 
-  const handleExit = () => {
+  const handleClose = () => {
     setCityName('');
     setDistrict('');
     setPopulation('');
     setCountry('');
     setRegion('');
     setError('');
-    handleClose();
+    setOpen(false);
   }
 
   return (
-    <Modal 
-      aria-labelledby="spring-modal-title"
-      aria-describedby="spring-modal-description"
-      open={open}
-      onClose={handleClose}
-      closeAfterTransition
-      slots={{ backdrop: Backdrop }}
-      slotProps={{
-        backdrop: {
-          TransitionComponent: Fade,
-      },
-    }}
-    >
+    <div>
+      <Tooltip title="Add">
+        <IconButton 
+              sx={{ color: 'green' }}
+              onClick={handleOpen}>
+              <AddCircleOutlinedIcon/>
+        </IconButton> 
+      </Tooltip>
+      <Modal 
+        aria-labelledby="spring-modal-title"
+        aria-describedby="spring-modal-description"
+        open={open}
+        onClose={handleClose}
+        slots={{ backdrop: Backdrop }}
+        slotProps={{
+          backdrop: {
+            TransitionComponent: Fade,
+          },
+        }}
+      >
       <Fade in={open}>
         <Box>
           <ModalDialog>
             <DialogTitle>Create new data entry</DialogTitle>
             <IconButton
               aria-label="close"
-              onClick={handleExit}
+              onClick={handleClose}
               sx={{
                 position: 'absolute',
                 right: 8,
@@ -202,8 +200,9 @@ const AddRowModal = ({ open, handleClose }) => {
             </form>
           </ModalDialog>
         </Box>
-       </Fade>        
-    </Modal>
+      </Fade>        
+      </Modal>
+    </div>
   );
 };
 
