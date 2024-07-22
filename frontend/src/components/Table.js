@@ -252,16 +252,18 @@ const TableMain = () => {
   const [orderBy, setOrderBy] = useState('Population');
   const [selected, setSelected] = useState([]);
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(10);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [error404Flag, set404] = useState(false);
   const [error500Flag, set500] = useState(false);
   const [otherErrorFlag, setOtherError] = useState(false);
   const [cityData, setCityData] = useState([]);
   const [isEditRecordModalOpen, setIsEditRecordModalOpen] = useState(false);
+  const [rowsHook, setRowsHook] = useState([]);
 
   useEffect(() => {
     fetchData(`http://localhost:3000/api/cities`, setCityData);
   }, []);
+
   const rows = cityData;
   const fetchData = async (url, setData) => { //data_param is supposed to be the setter from a useState
     try {
@@ -288,12 +290,14 @@ const TableMain = () => {
 
   const handleEdit = (event, row) => {
     event.stopPropagation();
-    setSelected([row.id])
+    setSelected([row.CityID]);
+    setRowsHook([row]);
     setIsEditRecordModalOpen(true);
   }
 
   const handleEditClose = (event) => {
     setSelected([]);
+    setRowsHook([]);
     setIsEditRecordModalOpen(false);
   }
 
@@ -454,7 +458,7 @@ const TableMain = () => {
           <EditRecordModal 
             open={isEditRecordModalOpen} 
             handleClose={handleEditClose}
-            id={selected[0]} 
+            rows={rowsHook[0]}
           />
         </TableContainer>
         <TablePagination

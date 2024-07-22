@@ -11,24 +11,35 @@ import Stack from '@mui/joy/Stack';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 
-const EditRowModal = ({ open, handleClose, id }) => {
-  const [cityID, setCityID] = useState('');
-  const [cityName, setCityName] = useState('');
-  const [district, setDistrict] = useState('');
-  const [population, setPopulation] = useState('');
-  const [country, setCountry] = useState('');
-  const [region, setRegion] = useState('');
+const EditRowModal = ({ open, handleClose, rows }) => {
+  const [CityID, setCityID] = useState('');
+  const [CityName, setCityName] = useState('');
+  const [District, setDistrict] = useState('');
+  const [CityPopulation, setCityPopulation] = useState('');
+  const [CountryName, setCountryName] = useState('');
+  const [Region, setRegion] = useState('');
   const [error, setError] = useState('');
+
+  React.useEffect(() => {
+    if (open) {
+      setCityID(rows.CityID);
+      setCityName(rows.CityName);  // Set cityName from initialCity
+      setDistrict(rows.District);
+      setCityPopulation(rows.CityPopulation);
+      setCountryName(rows.CountryName);
+      setRegion(rows.Region);
+    }
+  }, [open, rows]);
 
   const handleSubmit = async (event) => {
     
-    setCityID(id);
+    //setCityID(id);
     event.preventDefault();
     event.stopPropagation();
-
+    
     try {
 
-      if (!Number.isInteger(Number(population))) {
+      if (!Number.isInteger(Number(CityPopulation))) {
         setError('Population must be an integer');
         return;
       }
@@ -39,12 +50,12 @@ const EditRowModal = ({ open, handleClose, id }) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ 
-          cityID: cityID,
-          cityName: cityName, 
-          district: district, 
-          population: population, 
-          country: country, 
-          region: region 
+          CityID: CityID,
+          CityName: CityName, 
+          District: District, 
+          CityPopulation: CityPopulation, 
+          CountryName: CountryName, 
+          Region: Region 
         })
       });
       const data = await response.json();
@@ -53,8 +64,8 @@ const EditRowModal = ({ open, handleClose, id }) => {
     }
     setCityName('');
     setDistrict('');
-    setPopulation('');
-    setCountry('');
+    setCityPopulation('');
+    setCountryName('');
     setRegion('');
     setError('');
     handleClose(); // Close the modal
@@ -63,13 +74,14 @@ const EditRowModal = ({ open, handleClose, id }) => {
   const handleExit = (event) => {
     setCityName('');
     setDistrict('');
-    setPopulation('');
-    setCountry('');
+    setCityPopulation('');
+    setCountryName('');
     setRegion('');
     setError('');
     event.stopPropagation();
     handleClose();
   }
+
 
   return (
     <Modal open={open} onClose={handleClose}>
@@ -94,7 +106,7 @@ const EditRowModal = ({ open, handleClose, id }) => {
               <FormLabel>City Name</FormLabel>
               <Input
                 required
-                value={cityName}
+                value={CityName}
                 onChange={(e) => setCityName(e.target.value)}
               />
             </FormControl>
@@ -102,7 +114,7 @@ const EditRowModal = ({ open, handleClose, id }) => {
               <FormLabel>District</FormLabel>
               <Input
                 required
-                value={district}
+                value={District}
                 onChange={(e) => setDistrict(e.target.value)}
               />
             </FormControl>
@@ -110,23 +122,23 @@ const EditRowModal = ({ open, handleClose, id }) => {
               <FormLabel>Population</FormLabel>
               <Input
                 required
-                value={population}
-                onChange={(e) => setPopulation(e.target.value)}
+                value={CityPopulation}
+                onChange={(e) => setCityPopulation(e.target.value)}
               />
             </FormControl>
             <FormControl>
               <FormLabel>Country</FormLabel>
               <Input
                 required
-                value={country}
-                onChange={(e) => setCountry(e.target.value)}
+                value={CountryName}
+                onChange={(e) => setCountryName(e.target.value)}
               />
             </FormControl>
             <FormControl>
               <FormLabel>Region</FormLabel>
               <Input
                 required
-                value={region}
+                value={Region}
                 onChange={(e) => setRegion(e.target.value)}
               />
             </FormControl>

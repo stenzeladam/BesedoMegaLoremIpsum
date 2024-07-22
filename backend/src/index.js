@@ -67,31 +67,42 @@ function generateRandomCode() {
 
 // Function to check if the generated country code already exists in the database.
 function codeExists(code) {
-    pool.query(
-        `SELECT 1 FROM world.country WHERE Code = ?`,
-        [code],
-        (err) => {
-            if (err) {
-                return false;
+    if (!code) {
+        return Promise.resolve(false);
+    }
+    return new Promise((resolve, reject) => {
+        pool.query(
+            `SELECT 1 FROM world.country WHERE Code = ?`,
+            [code],
+            (err, result) => {
+                if (err) {
+                    console.error(err);
+                    return reject(false); 
+                }
+                if (result.length < 1) {
+                    resolve(false); // country code is not found
+                }
+                resolve(true); // country code is found
             }
-            else {
-                return true;
-            }
-        }
-    );
-}
+        )
+    }
+)}
 
-function insertCountry(cityName, district, population, country, region) {
+async function insertCountry(cityName, district, population, country, region) {
+
+    let i = 0; // for max iterations in while loop
     const newCode = generateRandomCode();
-    while(codeExists(newCode)) {
+    let checkExists = await codeExists(newCode);
+    while(checkExists && i < 100) {
         newCode = generateRandomCode();
+        checkExists = await codeExists(newCode);
+        i++;
     } 
     // Country code is unique, insert the country
     pool.query(
         `INSERT INTO world.country (Code, Name, Region) VALUES (?, ?, ?)`,
         [newCode, country, region],
         (err, result) => {
-            console.log(`result1: ${JSON.stringify(result)}`);
             if (err) {
                 console.error(err);
                 return;
@@ -101,7 +112,6 @@ function insertCountry(cityName, district, population, country, region) {
                 `INSERT INTO world.city (Name, CountryCode, District, Population) VALUES (?, ?, ?, ?)`,
                 [cityName, newCode, district, population],
                 (err, result2) => {
-                    console.log(`result2: ${JSON.stringify(result2)}`);
                     if (err) {
                         console.error(err);
                     }
@@ -129,9 +139,8 @@ app.post('/api/cities/add', (req, res) => {
 
 function isCountryInDatabase(country) {
     if (!country) {
-      return Promise.resolve(false);
+      return (false);
     }
-  
     return new Promise((resolve, reject) => {
       pool.query(
         `SELECT 1 FROM world.country WHERE Name = ?`,
@@ -143,7 +152,8 @@ function isCountryInDatabase(country) {
           }
           if (result.length > 0) {
             resolve(true); // country is found
-          } else {
+          } 
+          else {
             resolve(false); // country is not found
           }
         }
@@ -154,31 +164,64 @@ function isCountryInDatabase(country) {
 
 app.put('/api/cities/edit', async (req, res) => {
     const { 
-        cityID, 
-        cityName, 
-        district, 
-        population, 
-        country, 
-        region 
+        CityID, 
+        CityName, 
+        District, 
+        CityPopulation, 
+        CountryName, 
+        Region 
       } = req.body;
-      console.log(`Destructured: ${[cityID, cityName, district, population, country, region]}`);
-    if (!cityID || !cityName || !district || !population || !country || !region) {
+    if (!CityID || !CityName || !District || !CityPopulation || !CountryName || !Region) {
         return res.status(400).send('400 Bad Request: Incomplete data');
     }
-    // first, check if the country entered has an existing country code
-    // if the country code exists, simply update the table
-    // if the country/country code does not exist, you need to generate a country code for the entered country
-    // add the country/country code to world.countries
-    // keep track of the country code for the old entry that is being overwritten,
-    // if there are no entries in world.city with the old country code, delete the old country code
     try {
-        const exists = await isCountryInDatabase(country);
-        console.log(`Country exists: ${exists}`);
-        return res.status(200).send('Country existence checked successfully');
+        const exists = await isCountryInDatabase(CountryName);
+        if (exists) {
+            //update the table
+            pool.query(`
+                UPDATE world.city 
+                JOIN world.country 
+                ON world.city.CountryCode = world.country.Code
+                SET 
+                    world.city.Name = ?,
+                    world.city.District = ?,
+                    world.city.Population = ?,
+                    world.country.Name = ?,
+                    world.country.Region = ?
+                WHERE 
+                    world.city.ID = ?;`,
+                    [CityName, District, CityPopulation, CountryName, Region, CityID],
+                (err) => {
+                    if (err) {
+                        console.error(err);
+                        res.status(500).send({ message: '500 Error: Internal Server Error' });
+                    }
+                    else {
+                        res.status(200).send({ message: '200 OK: Successfully edited' })
+                    }
+                })
+        }
+        else {
+            let newCode = generateRandomCode(); // first, generate a new unique country code for this country
+            let checkExists = await codeExists(newCode);
+            let i = 0
+            while(checkExists && i < 100) { // max iterations of 100
+                newCode = generateRandomCode(); // generate until you get a country code that doesn't already exist
+                checkExists = await codeExists(newCode);
+                i++;
+            }
+            // Now that there is a unique country code, add the country and country code to the world.country table
+            try {
+                insertCountry(CityName, District, CityPopulation, CountryName, Region);
+                res.status(200).send({ message: 'status 200: Successfully edited/added data' });
+            } catch (error) {
+                console.error('Error adding the entry: ', error);
+                res.status(500).send({ message: '500 Error: Internal server error, could not add data' });
+            }
+        }
     } catch (error) {
         console.error('Error updating city and country:', error);
         res.status(500).send('500 Internal Server Error: Could not update city and country');
-        return res.status(500).send('500 Internal Server Error: Could not update city and country');
     }
 });
 
@@ -198,7 +241,6 @@ app.delete('/api/cities/delete', async (req, res) => {
                     if (err) {
                         console.error(err);
                         res.status(500).send({ message: '500 Error: Internal Server Error' });
-                        return;
                     }
                 }
             )
