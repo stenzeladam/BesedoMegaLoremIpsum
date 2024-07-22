@@ -213,7 +213,8 @@ app.put('/api/cities/edit', async (req, res) => {
             // Now that there is a unique country code, add the country and country code to the world.country table
             try {
                 insertCountry(CityName, District, CityPopulation, CountryName, Region);
-                res.status(200).send({ message: 'status 200: Successfully edited/added data' });
+                deleteRowByCityID(CityID); // delete the old entry, as the new one will replace it
+                res.status(200).send({ message: 'status 200: Successfully edited/replaced data' });
             } catch (error) {
                 console.error('Error adding the entry: ', error);
                 res.status(500).send({ message: '500 Error: Internal server error, could not add data' });
@@ -224,6 +225,28 @@ app.put('/api/cities/edit', async (req, res) => {
         res.status(500).send('500 Internal Server Error: Could not update city and country');
     }
 });
+
+function deleteRowByCityID (id) {
+    if (!id) {
+        console.log("Error 500: Undefined id")
+        return;
+    }
+    try {
+        pool.query(
+            `DELETE FROM world.city WHERE world.city.ID = ?`,
+            [id],
+            (err) => {
+                if (err) {
+                    console.error(err);
+                    return;
+                }
+            }
+        )
+    } catch (error) {
+        console.error('Error deleting selection', error);
+        return;
+    }
+}
 
 app.delete('/api/cities/delete', async (req, res) => {
     const { selected } = req.body;
