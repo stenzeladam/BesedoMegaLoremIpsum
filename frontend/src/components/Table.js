@@ -154,7 +154,7 @@ EnhancedTableHead.propTypes = {
 };
 
 function EnhancedTableToolbar(props) {
-  const { numSelected, selected, setAddOpen } = props;
+  const { numSelected, selected, setAddOpen, setDeleteOpen } = props;
 
   return (
     <Toolbar
@@ -194,6 +194,7 @@ function EnhancedTableToolbar(props) {
       />
       <DeleteRecordDialog 
         selected={selected}
+        setDeleteOpen={setDeleteOpen}
       />
     </Toolbar>
   );
@@ -202,7 +203,8 @@ function EnhancedTableToolbar(props) {
 EnhancedTableToolbar.propTypes = {
   numSelected: PropTypes.number.isRequired,
   selected: PropTypes.any.isRequired,
-  setAddOpen: PropTypes.any.isRequired
+  setAddOpen: PropTypes.any.isRequired,
+  setDeleteOpen: PropTypes.any.isRequired
 };
 
 const TableMain = () => {
@@ -361,10 +363,15 @@ const TableMain = () => {
 
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
-    console.log("location.search: ", location.search)
     if (isDeleteOpen === undefined) {
       return;
     }
+    if (isDeleteOpen) {
+      queryParams.set('delete', 'true'); // Add the parameter if isDeleteOpen is true
+    } else {
+      queryParams.delete('delete'); // Remove the parameter if IsDeleteOpen is false
+    }
+    navigate(`?${queryParams.toString()}`, { replace: true });
   },[isDeleteOpen, location.search, navigate])
 
   const handleChangeRowsPerPage = (event) => {
@@ -410,6 +417,7 @@ const TableMain = () => {
           numSelected={selected.length} 
           selected={selected}
           setAddOpen={setAddOpen}
+          setDeleteOpen={setDeleteOpen}
         />
         <TableContainer className="table-container">
           <Table

@@ -11,12 +11,34 @@ import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { Tooltip } from '@mui/material';
+import { useLocation } from 'react-router-dom';
 
-const DeleteDialog = ({selected}) => {
+const DeleteDialog = ({ selected, setDeleteOpen }) => {
   const [open, setOpen] = useState(false);
   const [isDeleteDisabled, setIsDeleteDisabled] = useState(true);
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
+  const location = useLocation();
+  const handleOpen = () => {
+    setDeleteOpen(true);
+    setOpen(true);
+  }
+  const handleClose = () => {
+    setDeleteOpen(false);
+    setOpen(false);
+  }
+
+  useEffect(() => {
+    // Parse the query parameters from the URL
+    const queryParams = new URLSearchParams(location.search);
+    const state = queryParams.get('delete');
+    
+    // Set the state based on the URL parameter
+    if (state === 'true') {
+      setOpen(true);
+    } else {
+      setOpen(false);
+    }
+  }, [location.search]);
+
 
   useEffect(() => {
     if (selected.length > 0) {
