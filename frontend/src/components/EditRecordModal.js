@@ -12,6 +12,9 @@ import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import EditIcon from '@mui/icons-material/Edit';
 import { Tooltip } from '@mui/material';
+import Fade from './Fade';
+import Backdrop from '@mui/material/Backdrop';
+import Box from '@mui/material/Box';
 
 const EditRowModal = ({ row }) => {
   const [CityID, setCityID] = useState('');
@@ -85,78 +88,92 @@ const EditRowModal = ({ row }) => {
     setOpen(false);
   }
 
-
   return (
     <div>
       <Tooltip title="Edit">
-        <EditIcon onClick={handleOpen}/>
+        <EditIcon onClick={handleOpen} />
       </Tooltip>
-      <Modal open={open} onClose={handleClose}>
-        <ModalDialog>
-          <DialogTitle>Edit existing data entry</DialogTitle>
-          <IconButton
-            aria-label="close"
-            onClick={handleClose}
-            sx={{
-              position: 'absolute',
-              right: 8,
-              top: 8,
-              color: (theme) => theme.palette.grey[500],
-            }}
-          >
-            <CloseIcon />
-          </IconButton>
-          <DialogContent>Fill in the information for the table</DialogContent>
-          <form onSubmit={handleSubmit}>
-            <Stack spacing={2}>
-              <FormControl>
-                <FormLabel>City Name</FormLabel>
-                <Input
-                  required
-                  value={CityName}
-                  onChange={(e) => setCityName(e.target.value)}
-                />
-              </FormControl>
-              <FormControl>
-                <FormLabel>District</FormLabel>
-                <Input
-                  required
-                  value={District}
-                  onChange={(e) => setDistrict(e.target.value)}
-                />
-              </FormControl>
-              <FormControl>
-                <FormLabel>Population</FormLabel>
-                <Input
-                  required
-                  value={CityPopulation}
-                  onChange={(e) => setCityPopulation(e.target.value)}
-                />
-              </FormControl>
-              <FormControl>
-                <FormLabel>Country</FormLabel>
-                <Input
-                  required
-                  value={CountryName}
-                  onChange={(e) => setCountryName(e.target.value)}
-                />
-              </FormControl>
-              <FormControl>
-                <FormLabel>Region</FormLabel>
-                <Input
-                  required
-                  value={Region}
-                  onChange={(e) => setRegion(e.target.value)}
-                />
-              </FormControl>
-              {error && <p style={{ color: 'red' }}>{error}</p>}
-              <Button type="submit">Submit</Button>
-            </Stack>
-          </form>
-        </ModalDialog>
+      <Modal 
+        aria-labelledby="spring-modal-title"
+        aria-describedby="spring-modal-description"
+        open={open}
+        onClose={handleClose}
+        slots={{ backdrop: Backdrop }}
+        slotProps={{
+          backdrop: {
+            TransitionComponent: Fade,
+          },
+        }}
+      >
+        <Fade in={open}>
+          <Box>
+            <ModalDialog>
+              <DialogTitle>Edit existing data entry</DialogTitle>
+              <IconButton
+                aria-label="close"
+                onClick={handleClose}
+                sx={{
+                  position: 'absolute',
+                  right: 8,
+                  top: 8,
+                  color: (theme) => theme.palette.grey[500],
+                }}
+              >
+                <CloseIcon />
+              </IconButton>
+              <DialogContent>Fill in the information for the table</DialogContent>
+              <form onSubmit={handleSubmit}>
+                <Stack spacing={2}>
+                  <FormControl>
+                    <FormLabel>City Name</FormLabel>
+                    <Input
+                      required
+                      value={CityName}
+                      onChange={(e) => setCityName(e.target.value)}
+                    />
+                  </FormControl>
+                  <FormControl>
+                    <FormLabel>District</FormLabel>
+                    <Input
+                      required
+                      value={District}
+                      onChange={(e) => setDistrict(e.target.value)}
+                    />
+                  </FormControl>
+                  <FormControl>
+                    <FormLabel>Population</FormLabel>
+                    <Input
+                      required
+                      value={CityPopulation}
+                      onChange={(e) => setCityPopulation(e.target.value)}
+                    />
+                  </FormControl>
+                  <FormControl>
+                    <FormLabel>Country</FormLabel>
+                    <Input
+                      required
+                      value={CountryName}
+                      onChange={(e) => setCountryName(e.target.value)}
+                    />
+                  </FormControl>
+                  <FormControl>
+                    <FormLabel>Region</FormLabel>
+                    <Input
+                      required
+                      value={Region}
+                      onChange={(e) => setRegion(e.target.value)}
+                    />
+                  </FormControl>
+                  {error && <p style={{ color: 'red' }}>{error}</p>}
+                  <Button type="submit">Submit</Button>
+                </Stack>
+              </form>
+            </ModalDialog>
+          </Box>
+        </Fade> 
       </Modal>
     </div>
-  );
+  );  
 };
 
 export default EditRowModal;

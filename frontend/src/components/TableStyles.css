@@ -1,0 +1,52 @@
+.table-cell {
+    padding: 1rem;
+}
+
+.table-header {
+    padding: 1rem;
+    font-weight: bold;
+}
+
+.table-container {
+    padding: 1rem;
+    overflow-x: auto;
+}
+
+.col-id {
+    width: 5%;
+}
+
+.col-name {
+    width: 14%;
+}
+
+.col-district {
+    width: 16.67%;
+}
+
+.col-population {
+    width: 12.67%;
+}
+
+.col-country {
+    width: 16.67%;
+}
+
+.col-region {
+    width: 20%;
+}
+
+.col-actions {
+    width: 10%;
+}
+
+.table-row {
+    height: 5rem;
+}
+
+.table-cell-left {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    padding-left: 0.5rem;
+}

@@ -16,6 +16,8 @@ import { visuallyHidden } from '@mui/utils';
 import AddRecordModal from './AddRecordModal'
 import EditRecordModal from './EditRecordModal'
 import DeleteRecordDialog from './DeleteRecordDialog'
+import './TableStyles.css';
+
 
 function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
@@ -81,12 +83,12 @@ const headCells = [
     numeric: false,
     label: 'Region'
   },
-  {
-    id: 'edit_col',
-    align: 'right',
-    numeric: false,
-    label: 'Edit',
-  }
+  // {
+  //   id: 'edit_col',
+  //   align: 'right',
+  //   numeric: false,
+  //   label: 'Edit',
+  // }
 ];
 
 function EnhancedTableHead(props) {
@@ -317,8 +319,9 @@ const TableMain = () => {
       <Paper sx={{ width: '100%', mb: 2 }}>
         <EnhancedTableToolbar 
           numSelected={selected.length} 
-          selected={selected}/>
-        <TableContainer >
+          selected={selected}
+        />
+        <TableContainer className="table-container">
           <Table
             sx={{ minWidth: 750 }}
             aria-labelledby="tableTitle"
@@ -331,6 +334,7 @@ const TableMain = () => {
               onSelectAllClick={handleSelectAllClick}
               onRequestSort={handleRequestSort}
               rowCount={rows.length}
+              className="table-header"
             />
             <TableBody>
               {visibleRows.map((row, index) => {
@@ -347,8 +351,9 @@ const TableMain = () => {
                     key={row.CityID}
                     selected={isItemSelected}
                     sx={{ cursor: 'pointer' }}
+                    className="table-row"
                   >
-                    <TableCell padding="checkbox">
+                    <TableCell className="table-cell col-id" padding="checkbox">
                       <Checkbox
                         color="primary"
                         checked={isItemSelected}
@@ -357,24 +362,27 @@ const TableMain = () => {
                         }}
                       />
                     </TableCell>
-                    <TableCell
-                      component="th"
-                      id={labelId}
-                      scope="row"
-                      padding="none"
-                      align="center"
-                    >
+                    <TableCell className="table-cell col-name" component="th" id={labelId} scope="row" align="center">
                       {row.CityID}
                     </TableCell>
-                    <TableCell align="right">{row.CityName}</TableCell>
-                    <TableCell align="right">{row.District}</TableCell>
-                    <TableCell align="right">{row.CityPopulation}</TableCell>
-                    <TableCell align="right">{row.CountryName}</TableCell>
-                    <TableCell align="right">{row.Region}</TableCell>
-                    <TableCell align="right" padding='none'></TableCell>
-                    <TableCell >
+                    <TableCell className="table-cell col-name" align="right">
+                      {row.CityName}
+                    </TableCell>
+                    <TableCell className="table-cell col-district" align="right">
+                      {row.District}
+                    </TableCell>
+                    <TableCell className="table-cell col-population" align="right">
+                      {row.CityPopulation}
+                    </TableCell>
+                    <TableCell className="table-cell col-country" align="right">
+                      {row.CountryName}
+                    </TableCell>
+                    <TableCell className="table-cell col-region" align="right">
+                      {row.Region}
+                    </TableCell>
+                    <TableCell className="table-cell-left col-actions" padding='none'>
                       <EditRecordModal
-                        align="left"
+                        align="center"
                         row={row}
                       />
                     </TableCell>
@@ -387,7 +395,7 @@ const TableMain = () => {
                     height: (53) * emptyRows,
                   }}
                 >
-                  <TableCell colSpan={6} />
+                  <TableCell/>
                 </TableRow>
               )}
             </TableBody>
