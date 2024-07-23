@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Button from '@mui/joy/Button';
 import FormControl from '@mui/joy/FormControl';
 import FormLabel from '@mui/joy/FormLabel';
@@ -15,8 +15,9 @@ import { Tooltip } from '@mui/material';
 import Fade from './Fade';
 import Backdrop from '@mui/material/Backdrop';
 import Box from '@mui/material/Box';
+import { useLocation } from 'react-router-dom';
 
-const EditRowModal = ({ row }) => {
+const EditRowModal = ({ row, setEditOpen }) => {
   const [CityID, setCityID] = useState('');
   const [CityName, setCityName] = useState('');
   const [District, setDistrict] = useState('');
@@ -25,7 +26,24 @@ const EditRowModal = ({ row }) => {
   const [Region, setRegion] = useState('');
   const [error, setError] = useState('');
   const [open, setOpen] = React.useState(false);
-  const handleOpen = () => setOpen(true);
+  const handleOpen = () => {
+    setOpen(true);
+    setEditOpen(true);
+  }
+  const location = useLocation();
+
+  // useEffect(() => {
+  //   // Parse the query parameters from the URL
+  //   const queryParams = new URLSearchParams(location.search);
+  //   const state = queryParams.get('edit');
+    
+  //   // Set the state based on the URL parameter
+  //   if (state === 'true') {
+  //     setOpen(true);
+  //   } else {
+  //     setOpen(false);
+  //   }
+  // }, [location.search]);
 
   React.useEffect(() => {
     if (open) {
@@ -85,6 +103,7 @@ const EditRowModal = ({ row }) => {
     setCountryName('');
     setRegion('');
     setError('');
+    setEditOpen(false);
     setOpen(false);
   }
 

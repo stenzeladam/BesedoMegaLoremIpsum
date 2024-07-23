@@ -221,10 +221,12 @@ const TableMain = () => {
   const [cityData, setCityData] = useState([]);
   const [isAddOpen, setAddOpen] = useState(); 
   const [initialLoad, setInitialLoad] = useState(true); 
+  const [isEditOpen, setEditOpen] = useState();
+  const [isDeleteOpen, setDeleteOpen] = useState();
 
   // URL state management for adding an entry
   useEffect(() => {
-    const queryParams = new URLSearchParams(); 
+    const queryParams = new URLSearchParams(window.location.search); 
     if (isAddOpen === undefined) {
       // Do nothing if isAddOpen is undefined. This prevents the value from automatically defaulting to false
       return;
@@ -296,48 +298,74 @@ const TableMain = () => {
     }
 
     if (updateURL) {
-        queryParams.set("selected", newSelected.join("_"));
-        window.history.pushState(
-            null,
-            "",
-            `${window.location.pathname}?${queryParams.toString()}`
-        );
+        if (newSelected.length > 0) {
+            queryParams.set("selected", newSelected.join("_"));
+        } else {
+            queryParams.delete("selected");
+        }
+        navigate(`?${queryParams.toString()}`, { replace: true });
     }
+
     setSelected(newSelected);
-  };
+};
 
   useEffect(() => {
-      if (initialLoad) {
-          const queryParams = new URLSearchParams(location.search);
-          const selectedParam = queryParams.get("selected");
+    if (initialLoad) {
+        const queryParams = new URLSearchParams(location.search);
+        const selectedParam = queryParams.get("selected");
 
-          if (selectedParam) {
-              const ids = selectedParam.split("_").map(id => parseInt(id, 10));
-              setSelected(prevSelected => {
-                  const newSelected = [...prevSelected, ...ids];
-                  return Array.from(new Set(newSelected));
-              });
-          }
+        if (selectedParam) {
+            const ids = selectedParam.split("_").map(id => parseInt(id, 10));
+            setSelected(prevSelected => {
+                const newSelected = [...prevSelected, ...ids];
+                return Array.from(new Set(newSelected));
+            });
+        }
 
-          setInitialLoad(false);
-      }
+        setInitialLoad(false);
+    }
   }, [location, initialLoad]);
 
   useEffect(() => {
-      if (!initialLoad) {
-          const queryParams = new URLSearchParams(location.search);
-          queryParams.set("selected", selected.join("_"));
-          window.history.pushState(
-              null,
-              "",
-              `${window.location.pathname}?${queryParams.toString()}`
-          );
+    if (!initialLoad) {
+      const queryParams = new URLSearchParams(location.search);
+
+      if (selected.length > 0) {
+        queryParams.set("selected", selected.join("_"));
+      } else {
+        queryParams.delete("selected");
       }
-  }, [selected, initialLoad]);
+
+      navigate(`?${queryParams.toString()}`, { replace: true });
+    }
+  }, [selected, initialLoad, navigate, location.search]);
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
+
+  // // URL state management for editing modal
+  // useEffect(() => {
+  //   const queryParams = new URLSearchParams(window.location.search); 
+  //   if (isEditOpen === undefined) {
+  //     // Do nothing if isEditOpen is undefined. This prevents the value from automatically defaulting to false
+  //     return;
+  //   }
+  //   if (isEditOpen) {
+  //     queryParams.set('edit', 'true'); // Add the parameter if isEditOpen is true
+  //   } else {
+  //     queryParams.delete('edit'); // Remove the parameter if isEditOpen is false
+  //   }
+  //   navigate(`?${queryParams.toString()}`, { replace: true });
+  // }, [isEditOpen, navigate]);
+
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    console.log("location.search: ", location.search)
+    if (isDeleteOpen === undefined) {
+      return;
+    }
+  },[isDeleteOpen, location.search, navigate])
 
   const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(parseInt(event.target.value, 10));
@@ -446,6 +474,7 @@ const TableMain = () => {
                       <EditRecordModal
                         align="center"
                         row={row}
+                        setEditOpen={setEditOpen}
                       />
                     </TableCell>
                   </TableRow>
