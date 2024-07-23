@@ -349,21 +349,21 @@ const TableMain = () => {
     setPage(newPage);
   };
 
-  // // URL state management for editing modal
-  // useEffect(() => {
-  //   const queryParams = new URLSearchParams(window.location.search); 
-  //   if (isEditOpen === undefined) {
-  //     // Do nothing if isEditOpen is undefined. This prevents the value from automatically defaulting to false
-  //     return;
-  //   }
-  //   if (isEditOpen) {
-  //     queryParams.set('edit', 'true'); // Add the parameter if isEditOpen is true
-  //   } else {
-  //     queryParams.delete('edit'); // Remove the parameter if isEditOpen is false
-  //   }
-  //   navigate(`?${queryParams.toString()}`, { replace: true });
-  // }, [isEditOpen, navigate]);
+  // URL state management for editing modal
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search); 
+    if (isEditOpen === undefined) {
+      return;
+    }
+    if (isEditOpen) {
+      queryParams.set('edit', 'true'); // Add the parameter if isEditOpen is true
+    } else {
+      queryParams.delete('edit'); // Remove the parameter if isEditOpen is false
+    }
+    navigate(`?${queryParams.toString()}`, { replace: true });
+  }, [isEditOpen, location.search, navigate]);
 
+  //UR: state management for deleting selected rows
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
     if (isDeleteOpen === undefined) {
@@ -375,7 +375,7 @@ const TableMain = () => {
       queryParams.delete('delete'); // Remove the parameter if IsDeleteOpen is false
     }
     navigate(`?${queryParams.toString()}`, { replace: true });
-  },[isDeleteOpen, location.search, navigate])
+  }, [isDeleteOpen, location.search, navigate])
 
   const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(parseInt(event.target.value, 10));

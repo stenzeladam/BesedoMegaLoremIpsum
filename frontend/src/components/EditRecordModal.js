@@ -32,18 +32,18 @@ const EditRowModal = ({ row, setEditOpen }) => {
   }
   const location = useLocation();
 
-  // useEffect(() => {
-  //   // Parse the query parameters from the URL
-  //   const queryParams = new URLSearchParams(location.search);
-  //   const state = queryParams.get('edit');
+  useEffect(() => {
+    // Parse the query parameters from the URL
+    const queryParams = new URLSearchParams(location.search);
+    const state = queryParams.get('edit');
     
-  //   // Set the state based on the URL parameter
-  //   if (state === 'true') {
-  //     setOpen(true);
-  //   } else {
-  //     setOpen(false);
-  //   }
-  // }, [location.search]);
+    // Set the state based on the URL parameter
+    if (state === 'true') {
+      setOpen(true);
+    } else {
+      setOpen(false);
+    }
+  }, [location.search]);
 
   React.useEffect(() => {
     if (open) {
@@ -87,12 +87,12 @@ const EditRowModal = ({ row, setEditOpen }) => {
     } catch (error) {
       console.error('Error adding data', error);
     }
-    setCityName('');
-    setDistrict('');
-    setCityPopulation('');
-    setCountryName('');
-    setRegion('');
-    setError('');
+    // setCityName('');
+    // setDistrict('');
+    // setCityPopulation('');
+    // setCountryName('');
+    // setRegion('');
+    // setError('');
     handleClose(); // Close the modal
   };
 
