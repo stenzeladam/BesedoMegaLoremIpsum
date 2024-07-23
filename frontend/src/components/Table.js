@@ -287,6 +287,8 @@ const TableMain = () => {
     setSelected([]);
   };
 
+  const validIds = rows.map(row => row.id);
+
   const handleClick = (event, id, updateURL = true) => {
     const selectedIndex = selected.indexOf(id);
     const queryParams = new URLSearchParams(location.search);
@@ -309,24 +311,25 @@ const TableMain = () => {
     }
 
     setSelected(newSelected);
-};
+  };
 
   useEffect(() => {
     if (initialLoad) {
-        const queryParams = new URLSearchParams(location.search);
-        const selectedParam = queryParams.get("selected");
+      const queryParams = new URLSearchParams(location.search);
+      const selectedParam = queryParams.get("selected");
 
-        if (selectedParam) {
-            const ids = selectedParam.split("_").map(id => parseInt(id, 10));
-            setSelected(prevSelected => {
-                const newSelected = [...prevSelected, ...ids];
-                return Array.from(new Set(newSelected));
-            });
-        }
+      if (selectedParam) {
+        const ids = selectedParam.split("_").map(id => parseInt(id, 10));
+        const validIds = ids.filter(id => rows.some(row => row.id === id));
+        setSelected(prevSelected => {
+          const newSelected = [...prevSelected, ...validIds];
+          return Array.from(new Set(newSelected));
+        });
+      }
 
-        setInitialLoad(false);
+      setInitialLoad(false);
     }
-  }, [location, initialLoad]);
+  }, [location.search, initialLoad, rows]);
 
   useEffect(() => {
     if (!initialLoad) {
