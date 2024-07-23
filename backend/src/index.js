@@ -1,8 +1,9 @@
 require('dotenv').config();
 const express = require('express'); // Import Express.js framework
 const { createPool } = require('mysql2') // Destructuring createPool method from mysql2 module
-const app = express();
 const cors = require('cors');
+
+const app = express();
 app.use(express.json());
 app.use(cors());
 app.use(function(req, res, next) {

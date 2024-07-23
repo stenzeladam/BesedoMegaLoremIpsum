@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Button from '@mui/joy/Button';
 import FormControl from '@mui/joy/FormControl';
 import FormLabel from '@mui/joy/FormLabel';
@@ -15,17 +15,35 @@ import Box from '@mui/material/Box';
 import AddCircleOutlinedIcon from '@mui/icons-material/AddCircleOutlined';
 import { Tooltip } from '@mui/material';
 import Fade from './Fade'
+import { useLocation } from 'react-router-dom';
 
-const AddRowModal = () => {
+const AddRowModal = ({setAddOpen}) => {
   const [cityName, setCityName] = useState('');
   const [district, setDistrict] = useState('');
   const [population, setPopulation] = useState('');
   const [country, setCountry] = useState('');
   const [region, setRegion] = useState('');
   const [error, setError] = useState('');
-  const [open, setOpen] = React.useState(false);
-  const handleOpen = () => setOpen(true);
+  const [open, setOpen] = useState(false);
+  const location = useLocation();
+  
+  useEffect(() => {
+    // Parse the query parameters from the URL
+    const queryParams = new URLSearchParams(location.search);
+    const state = queryParams.get('add');
+    
+    // Set the state based on the URL parameter
+    if (state === 'true') {
+      setOpen(true);
+    } else {
+      setOpen(false);
+    }
+  }, [location.search]);
 
+  const handleOpen = () => {
+    setOpen(true);
+    setAddOpen(true);
+  }
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -69,6 +87,7 @@ const AddRowModal = () => {
     setCountry('');
     setRegion('');
     setError('');
+    setAddOpen(false);
     setOpen(false);
   }
 

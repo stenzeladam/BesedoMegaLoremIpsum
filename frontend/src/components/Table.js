@@ -17,7 +17,7 @@ import AddRecordModal from './AddRecordModal'
 import EditRecordModal from './EditRecordModal'
 import DeleteRecordDialog from './DeleteRecordDialog'
 import './TableStyles.css';
-
+import { useNavigate } from 'react-router-dom';
 
 function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
@@ -153,7 +153,7 @@ EnhancedTableHead.propTypes = {
 };
 
 function EnhancedTableToolbar(props) {
-  const { numSelected, selected } = props;
+  const { numSelected, selected, setAddOpen } = props;
 
   return (
     <Toolbar
@@ -188,7 +188,9 @@ function EnhancedTableToolbar(props) {
           Cities of the World
         </Typography>
       )}
-      <AddRecordModal/>
+      <AddRecordModal
+        setAddOpen={setAddOpen}
+      />
       <DeleteRecordDialog 
         selected={selected}
       />
@@ -198,7 +200,8 @@ function EnhancedTableToolbar(props) {
 
 EnhancedTableToolbar.propTypes = {
   numSelected: PropTypes.number.isRequired,
-  selected: PropTypes.any.isRequired
+  selected: PropTypes.any.isRequired,
+  setAddOpen: PropTypes.any.isRequired
 };
 
 const TableMain = () => {
@@ -211,6 +214,22 @@ const TableMain = () => {
   const [error500Flag, set500] = useState(false);
   const [otherErrorFlag, setOtherError] = useState(false);
   const [cityData, setCityData] = useState([]);
+  const [isAddOpen, setAddOpen] = useState();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const queryParams = new URLSearchParams();
+    if (isAddOpen === undefined) {
+      // Do nothing if isAddOpen is undefined. This prevents the value from automatically defaulting to false when entering "true" into the URL
+      return;
+    }
+    if (isAddOpen) {
+      queryParams.set('add', 'true'); // Add the parameter if isAddOpen is true
+    } else {
+      queryParams.delete('add'); // Remove the parameter if isAddOpen is false
+    }
+    navigate(`?${queryParams.toString()}`, { replace: true });
+  }, [isAddOpen, navigate]);
 
   useEffect(() => {
     fetchData(`http://localhost:3000/api/cities`, setCityData);
@@ -320,6 +339,7 @@ const TableMain = () => {
         <EnhancedTableToolbar 
           numSelected={selected.length} 
           selected={selected}
+          setAddOpen={setAddOpen}
         />
         <TableContainer className="table-container">
           <Table
