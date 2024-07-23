@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { alpha } from '@mui/material/styles'
-import { TableRow, TableCell, Checkbox, selectClasses, Skeleton } from '@mui/material';
+import { TableRow, TableCell, Checkbox } from '@mui/material';
 import Box from '@mui/material/Box';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -219,7 +219,8 @@ const TableMain = () => {
   const [error500Flag, set500] = useState(false);
   const [otherErrorFlag, setOtherError] = useState(false);
   const [cityData, setCityData] = useState([]);
-  const [isAddOpen, setAddOpen] = useState();  
+  const [isAddOpen, setAddOpen] = useState(); 
+  const [initialLoad, setInitialLoad] = useState(true); 
 
   // URL state management for adding an entry
   useEffect(() => {
@@ -262,92 +263,6 @@ const TableMain = () => {
   }
   // *** end of code section that NEEDS to be here
 
-  // URL state management for selecting entries example: http://localhost:3001/?selected=_2_
-   useEffect(() => { //this one sets selected based on the URL
-    const queryParams = new URLSearchParams(location.search); 
-    let URLnum = [];
-    const state = queryParams.get('selected');
-    if (state != null && state.includes('_')) {
-      URLnum = state.split('_')
-                    .filter(substring => substring !== "")
-                    .map(substring => parseInt(substring, 10));
-    }
-    console.log(URLnum)
-  //   // now need to check every index of URLnum for if there is a row with a corresponding cityID
-  //   // if there is a cityID equal to an index of arr, select the row with that cityID
-  //   // if not, ignore that index and don't add it to selected
-  //  *** CHECK URL if all of the numbers are already selected. 
-  //   If yes, then do nothing. Only setSelect the numbers not already selected
-  
-    for (let index = 0; index < URLnum.length; index++) {
-      for (let j = 0; j < rows.length; j++) {
-        if (rows[j]) { //make sure rows[j] is defined to avoid runtime error
-          if (URLnum[index] === rows[j].CityID) { 
-            console.log("HERE")
-            if(!selected.includes(URLnum[index])) {
-              console.log("ADD", selected)
-              setSelected(prevSelected => [...prevSelected, URLnum[index]]);
-            }
-            //setSelected(prevSelected => [...prevSelected, parseInt(arr[index], 10)]);
-          }
-        }
-      }
-    }
-   }, [location.search], rows);
-
-  //  useEffect(() => { //This one updates the URL whenever selected changes
-  //    let URLnums = [];
-  //    let numsToAddToURL = "";
-  //    let numsToReplaceURL = ""
-  //    const queryParams = new URLSearchParams(location.search); 
-     
-  //     const currentURL = queryParams.get('selected'); //get the URL, and check to see what IDs are selected. 
-  //     // If all of the IDs in the URL are already in selected, do nothing, as there is no reason to update the URL
-  //     if (currentURL && currentURL.includes('_')) {
-  //       URLnums = currentURL.split('_')
-  //                .filter(substring => substring !== "")
-  //                .map(substring => parseInt(substring, 10));
-  //     }
-  //     else if (currentURL == null) {
-  //       URLnums = [];
-  //     }
-  //     if (URLnums.length < selected.length) { //means something was added to selected, and the URL needs this number added
-  //       for (let i = 0; i < selected.length; i++) {
-  //         if (!URLnums.includes(selected[i])) {
-  //           numsToAddToURL += String(selected[i]) + "_"; 
-  //         }
-  //       }
-  //       if (currentURL) {
-  //         queryParams.set('selected', currentURL + numsToAddToURL);
-  //       }
-  //       else {
-  //         queryParams.set('selected', numsToAddToURL);
-  //       }
-  //        // add numsToAddToURL to the existing URL for 'selected'
-  //       navigate(`?${queryParams.toString()}`, { replace: true });
-  //     }
-  //     else if (URLnums.length > selected.length) { //something was removed from selected, and the URL needs this number removed
-  //       for (let i = 0; i < URLnums.length; i++) {
-  //         if (selected.includes(URLnums[i])) {
-  //           numsToReplaceURL += String(URLnums[i]) + "_"; //this will exclude any nums not selected, thus removing them when this replaces the URL
-  //         }
-  //       }
-  //       if (numsToReplaceURL === "") { //nothing is selected
-  //         queryParams.delete('selected');
-  //       }
-  //       else {
-  //         queryParams.set('selected', numsToReplaceURL); // replace the URL for 'selected' with numsToReplaceURL
-  //       }
-  //       navigate(`?${queryParams.toString()}`, { replace: true });
-  //     }
-  //     else if (URLnums === selected.length) {
-  //       //do nothing
-  //       return;
-  //     }
-     
-  
-  //  }, [ navigate, selected ]);
-
   //initial api call to display the database in the table
   useEffect(() => {
     fetchData(`http://localhost:3000/api/cities`, setCityData);
@@ -368,24 +283,57 @@ const TableMain = () => {
     setSelected([]);
   };
 
-  const handleClick = (event, id) => {
+  const handleClick = (event, id, updateURL = true) => {
     const selectedIndex = selected.indexOf(id);
-    let newSelected = [];
+    const queryParams = new URLSearchParams(location.search);
+
+    let newSelected = [...selected];
 
     if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selected, id);
-    } else if (selectedIndex === 0) {
-      newSelected = newSelected.concat(selected.slice(1));
-    } else if (selectedIndex === selected.length - 1) {
-      newSelected = newSelected.concat(selected.slice(0, -1));
-    } else if (selectedIndex > 0) {
-      newSelected = newSelected.concat(
-        selected.slice(0, selectedIndex),
-        selected.slice(selectedIndex + 1),
-      );
+        newSelected.push(id);
+    } else {
+        newSelected.splice(selectedIndex, 1);
+    }
+
+    if (updateURL) {
+        queryParams.set("selected", newSelected.join("_"));
+        window.history.pushState(
+            null,
+            "",
+            `${window.location.pathname}?${queryParams.toString()}`
+        );
     }
     setSelected(newSelected);
   };
+
+  useEffect(() => {
+      if (initialLoad) {
+          const queryParams = new URLSearchParams(location.search);
+          const selectedParam = queryParams.get("selected");
+
+          if (selectedParam) {
+              const ids = selectedParam.split("_").map(id => parseInt(id, 10));
+              setSelected(prevSelected => {
+                  const newSelected = [...prevSelected, ...ids];
+                  return Array.from(new Set(newSelected));
+              });
+          }
+
+          setInitialLoad(false);
+      }
+  }, [location, initialLoad]);
+
+  useEffect(() => {
+      if (!initialLoad) {
+          const queryParams = new URLSearchParams(location.search);
+          queryParams.set("selected", selected.join("_"));
+          window.history.pushState(
+              null,
+              "",
+              `${window.location.pathname}?${queryParams.toString()}`
+          );
+      }
+  }, [selected, initialLoad]);
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
