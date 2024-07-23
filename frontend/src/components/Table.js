@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { alpha } from '@mui/material/styles'
-import { TableRow, TableCell, Checkbox } from '@mui/material';
+import { TableRow, TableCell, Checkbox, selectClasses, Skeleton } from '@mui/material';
 import Box from '@mui/material/Box';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -18,6 +18,7 @@ import EditRecordModal from './EditRecordModal'
 import DeleteRecordDialog from './DeleteRecordDialog'
 import './TableStyles.css';
 import { useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 
 function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
@@ -205,6 +206,10 @@ EnhancedTableToolbar.propTypes = {
 };
 
 const TableMain = () => {
+  
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const [order, setOrder] = useState('asc');
   const [orderBy, setOrderBy] = useState('Population');
   const [selected, setSelected] = useState([]);
@@ -214,13 +219,13 @@ const TableMain = () => {
   const [error500Flag, set500] = useState(false);
   const [otherErrorFlag, setOtherError] = useState(false);
   const [cityData, setCityData] = useState([]);
-  const [isAddOpen, setAddOpen] = useState();
-  const navigate = useNavigate();
+  const [isAddOpen, setAddOpen] = useState();  
 
+  // URL state management for adding an entry
   useEffect(() => {
-    const queryParams = new URLSearchParams();
+    const queryParams = new URLSearchParams(); 
     if (isAddOpen === undefined) {
-      // Do nothing if isAddOpen is undefined. This prevents the value from automatically defaulting to false when entering "true" into the URL
+      // Do nothing if isAddOpen is undefined. This prevents the value from automatically defaulting to false
       return;
     }
     if (isAddOpen) {
@@ -231,11 +236,8 @@ const TableMain = () => {
     navigate(`?${queryParams.toString()}`, { replace: true });
   }, [isAddOpen, navigate]);
 
-  useEffect(() => {
-    fetchData(`http://localhost:3000/api/cities`, setCityData);
-  }, []);
-
-  const rows = cityData;
+  // *** this NEEDS to be here, because the useEffect after it relies on rows being initialized or else it crashes
+  const rows = cityData; 
   const fetchData = async (url, setData) => { //data_param is supposed to be the setter from a useState
     try {
       const response = await fetch(url);
@@ -258,6 +260,98 @@ const TableMain = () => {
       console.error("Error: ", error);
     }
   }
+  // *** end of code section that NEEDS to be here
+
+  // URL state management for selecting entries example: http://localhost:3001/?selected=_2_
+   useEffect(() => { //this one sets selected based on the URL
+    const queryParams = new URLSearchParams(location.search); 
+    let URLnum = [];
+    const state = queryParams.get('selected');
+    if (state != null && state.includes('_')) {
+      URLnum = state.split('_')
+                    .filter(substring => substring !== "")
+                    .map(substring => parseInt(substring, 10));
+    }
+    console.log(URLnum)
+  //   // now need to check every index of URLnum for if there is a row with a corresponding cityID
+  //   // if there is a cityID equal to an index of arr, select the row with that cityID
+  //   // if not, ignore that index and don't add it to selected
+  //  *** CHECK URL if all of the numbers are already selected. 
+  //   If yes, then do nothing. Only setSelect the numbers not already selected
+  
+    for (let index = 0; index < URLnum.length; index++) {
+      for (let j = 0; j < rows.length; j++) {
+        if (rows[j]) { //make sure rows[j] is defined to avoid runtime error
+          if (URLnum[index] === rows[j].CityID) { 
+            console.log("HERE")
+            if(!selected.includes(URLnum[index])) {
+              console.log("ADD", selected)
+              setSelected(prevSelected => [...prevSelected, URLnum[index]]);
+            }
+            //setSelected(prevSelected => [...prevSelected, parseInt(arr[index], 10)]);
+          }
+        }
+      }
+    }
+   }, [location.search], rows);
+
+  //  useEffect(() => { //This one updates the URL whenever selected changes
+  //    let URLnums = [];
+  //    let numsToAddToURL = "";
+  //    let numsToReplaceURL = ""
+  //    const queryParams = new URLSearchParams(location.search); 
+     
+  //     const currentURL = queryParams.get('selected'); //get the URL, and check to see what IDs are selected. 
+  //     // If all of the IDs in the URL are already in selected, do nothing, as there is no reason to update the URL
+  //     if (currentURL && currentURL.includes('_')) {
+  //       URLnums = currentURL.split('_')
+  //                .filter(substring => substring !== "")
+  //                .map(substring => parseInt(substring, 10));
+  //     }
+  //     else if (currentURL == null) {
+  //       URLnums = [];
+  //     }
+  //     if (URLnums.length < selected.length) { //means something was added to selected, and the URL needs this number added
+  //       for (let i = 0; i < selected.length; i++) {
+  //         if (!URLnums.includes(selected[i])) {
+  //           numsToAddToURL += String(selected[i]) + "_"; 
+  //         }
+  //       }
+  //       if (currentURL) {
+  //         queryParams.set('selected', currentURL + numsToAddToURL);
+  //       }
+  //       else {
+  //         queryParams.set('selected', numsToAddToURL);
+  //       }
+  //        // add numsToAddToURL to the existing URL for 'selected'
+  //       navigate(`?${queryParams.toString()}`, { replace: true });
+  //     }
+  //     else if (URLnums.length > selected.length) { //something was removed from selected, and the URL needs this number removed
+  //       for (let i = 0; i < URLnums.length; i++) {
+  //         if (selected.includes(URLnums[i])) {
+  //           numsToReplaceURL += String(URLnums[i]) + "_"; //this will exclude any nums not selected, thus removing them when this replaces the URL
+  //         }
+  //       }
+  //       if (numsToReplaceURL === "") { //nothing is selected
+  //         queryParams.delete('selected');
+  //       }
+  //       else {
+  //         queryParams.set('selected', numsToReplaceURL); // replace the URL for 'selected' with numsToReplaceURL
+  //       }
+  //       navigate(`?${queryParams.toString()}`, { replace: true });
+  //     }
+  //     else if (URLnums === selected.length) {
+  //       //do nothing
+  //       return;
+  //     }
+     
+  
+  //  }, [ navigate, selected ]);
+
+  //initial api call to display the database in the table
+  useEffect(() => {
+    fetchData(`http://localhost:3000/api/cities`, setCityData);
+  }, []);
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === 'asc';
