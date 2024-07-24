@@ -10,12 +10,12 @@ import DialogContent from "@mui/joy/DialogContent";
 import Stack from "@mui/joy/Stack";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
-import Backdrop from '@mui/material/Backdrop';
-import Box from '@mui/material/Box';
+import Backdrop from "@mui/material/Backdrop";
+import Box from "@mui/material/Box";
 import EditIcon from "@mui/icons-material/Edit";
-import { Tooltip } from '@mui/material';
-import Fade from './Fade'
-import { useLocation } from 'react-router-dom';
+import { Tooltip } from "@mui/material";
+import Fade from "./Fade";
+import { useLocation } from "react-router-dom";
 
 const EditRowModal = ({ selected, row, setEditOpen }) => {
     const [CityID, setCityID] = useState("");
@@ -26,46 +26,57 @@ const EditRowModal = ({ selected, row, setEditOpen }) => {
     const [Region, setRegion] = useState("");
     const [error, setError] = useState("");
     const [open, setOpen] = useState(false);
-    const [isEditDisabled, setEditDisabled] = useState(true);
+    const [isEditDisabled, setEditDisabled] = useState(selected.length !== 1);
     const location = useLocation();
+    const [selectedRow, setSelectedRow] = useState(null);
+
+    const findRowIndexByCityID = (selectedParam, rowParam) => {
+        if (selectedParam.length === 0) {
+            return -1; // No selected items
+        }
+    
+        const cityID = selectedParam[0];
+        return rowParam.findIndex(item => item.CityID === cityID);
+    };
 
     const handleOpen = () => {
+        let rowIndex = findRowIndexByCityID(selected, row);
+        setSelectedRow(row[rowIndex]);
         setOpen(true);
         setEditOpen(true);
     };
 
     useEffect(() => {
-        // Parse the query parameters from the URL
         const queryParams = new URLSearchParams(location.search);
         const state = queryParams.get("edit");
 
-        // Set the state based on the URL parameter
         if (state === "true") {
-            setOpen(true);
+            let rowIndex = findRowIndexByCityID(selected, row);
+            if (rowIndex !== -1) {
+                setSelectedRow(row[rowIndex]);
+                setOpen(true);
+            } else {
+                setOpen(false);
+            }
         } else {
             setOpen(false);
         }
-    }, [location.search]);
+    }, [location.search, selected, row]);
 
     useEffect(() => {
-        if (open) {
-            setCityID(row.CityID);
-            setCityName(row.CityName); // Set cityName from initialCity
-            setDistrict(row.District);
-            setCityPopulation(row.CityPopulation);
-            setCountryName(row.CountryName);
-            setRegion(row.Region);
+        if (open && selectedRow) {
+            setCityID(selectedRow.CityID || "");
+            setCityName(selectedRow.CityName || "");
+            setDistrict(selectedRow.District || "");
+            setCityPopulation(selectedRow.CityPopulation || "");
+            setCountryName(selectedRow.CountryName || "");
+            setRegion(selectedRow.Region || "");
         }
-    }, [open, row]);
+    }, [open, selectedRow]);
 
     useEffect(() => {
-        if (selected.length === 1) {
-          setEditDisabled(false);
-        }
-        else {
-          setEditDisabled(true);
-        }
-      }, [selected.length])
+        setEditDisabled(selected.length !== 1);
+    }, [selected.length]);
 
     const handleSubmit = async (event) => {
         event.preventDefault();
@@ -77,38 +88,31 @@ const EditRowModal = ({ selected, row, setEditOpen }) => {
                 return;
             }
 
-            const response = await fetch(
-                "http://localhost:3000/api/cities/edit",
-                {
-                    method: "PUT",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        CityID: CityID,
-                        CityName: CityName,
-                        District: District,
-                        CityPopulation: CityPopulation,
-                        CountryName: CountryName,
-                        Region: Region,
-                    }),
-                }
-            );
+            const response = await fetch("http://localhost:3000/api/cities/edit", {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    CityID,
+                    CityName,
+                    District,
+                    CityPopulation,
+                    CountryName,
+                    Region,
+                }),
+            });
             const data = await response.json();
             console.log(data);
         } catch (error) {
             console.error("Error adding data", error);
         }
-        // setCityName('');
-        // setDistrict('');
-        // setCityPopulation('');
-        // setCountryName('');
-        // setRegion('');
-        // setError('');
-        handleClose(); // Close the modal
+
+        handleClose();
     };
 
     const handleClose = () => {
+        setCityID("");
         setCityName("");
         setDistrict("");
         setCityPopulation("");
@@ -126,7 +130,7 @@ const EditRowModal = ({ selected, row, setEditOpen }) => {
                     <IconButton
                         onClick={handleOpen}
                         disabled={isEditDisabled}
-                        sx={{ color: 'orange' }}
+                        sx={{ color: "orange" }}
                     >
                         <EditIcon />
                     </IconButton>
@@ -163,66 +167,68 @@ const EditRowModal = ({ selected, row, setEditOpen }) => {
                             <DialogContent>
                                 Fill in the information for the table
                             </DialogContent>
-                            <form onSubmit={handleSubmit}>
-                                <Stack spacing={2}>
-                                    <FormControl>
-                                        <FormLabel>City Name</FormLabel>
-                                        <Input
-                                            required
-                                            value={CityName}
-                                            onChange={(e) =>
-                                                setCityName(e.target.value)
-                                            }
-                                        />
-                                    </FormControl>
-                                    <FormControl>
-                                        <FormLabel>District</FormLabel>
-                                        <Input
-                                            required
-                                            value={District}
-                                            onChange={(e) =>
-                                                setDistrict(e.target.value)
-                                            }
-                                        />
-                                    </FormControl>
-                                    <FormControl>
-                                        <FormLabel>Population</FormLabel>
-                                        <Input
-                                            required
-                                            value={CityPopulation}
-                                            onChange={(e) =>
-                                                setCityPopulation(
-                                                    e.target.value
-                                                )
-                                            }
-                                        />
-                                    </FormControl>
-                                    <FormControl>
-                                        <FormLabel>Country</FormLabel>
-                                        <Input
-                                            required
-                                            value={CountryName}
-                                            onChange={(e) =>
-                                                setCountryName(e.target.value)
-                                            }
-                                        />
-                                    </FormControl>
-                                    <FormControl>
-                                        <FormLabel>Region</FormLabel>
-                                        <Input
-                                            required
-                                            value={Region}
-                                            onChange={(e) =>
-                                                setRegion(e.target.value)
-                                            }
-                                        />
-                                    </FormControl>
-                                    {error && (
-                                        <p style={{ color: "red" }}>{error}</p>
-                                    )}
-                                    <Button type="submit">Submit</Button>
-                                </Stack>
-                            </form>
+                            {selectedRow && (
+                                <form onSubmit={handleSubmit}>
+                                    <Stack spacing={2}>
+                                        <FormControl>
+                                            <FormLabel>City Name</FormLabel>
+                                            <Input
+                                                required
+                                                value={CityName}
+                                                onChange={(e) =>
+                                                    setCityName(e.target.value)
+                                                }
+                                            />
+                                        </FormControl>
+                                        <FormControl>
+                                            <FormLabel>District</FormLabel>
+                                            <Input
+                                                required
+                                                value={District}
+                                                onChange={(e) =>
+                                                    setDistrict(e.target.value)
+                                                }
+                                            />
+                                        </FormControl>
+                                        <FormControl>
+                                            <FormLabel>Population</FormLabel>
+                                            <Input
+                                                required
+                                                value={CityPopulation}
+                                                onChange={(e) =>
+                                                    setCityPopulation(
+                                                        e.target.value
+                                                    )
+                                                }
+                                            />
+                                        </FormControl>
+                                        <FormControl>
+                                            <FormLabel>Country</FormLabel>
+                                            <Input
+                                                required
+                                                value={CountryName}
+                                                onChange={(e) =>
+                                                    setCountryName(e.target.value)
+                                                }
+                                            />
+                                        </FormControl>
+                                        <FormControl>
+                                            <FormLabel>Region</FormLabel>
+                                            <Input
+                                                required
+                                                value={Region}
+                                                onChange={(e) =>
+                                                    setRegion(e.target.value)
+                                                }
+                                            />
+                                        </FormControl>
+                                        {error && (
+                                            <p style={{ color: "red" }}>{error}</p>
+                                        )}
+                                        <Button type="submit">Submit</Button>
+                                    </Stack>
+                                </form>
+                            )}
                         </ModalDialog>
                     </Box>
                 </Fade>

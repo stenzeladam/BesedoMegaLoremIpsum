@@ -11,26 +11,31 @@ import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { Tooltip } from '@mui/material';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 const DeleteDialog = ({ selected, setDeleteOpen }) => {
   const [open, setOpen] = useState(false);
   const [isDeleteDisabled, setIsDeleteDisabled] = useState(true);
   const location = useLocation();
+  const navigate = useNavigate();
+  const theme = useTheme();
+  const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
+
   const handleOpen = () => {
     setDeleteOpen(true);
     setOpen(true);
-  }
+  };
+
   const handleClose = () => {
     setDeleteOpen(false);
     setOpen(false);
-  }
+  };
 
   useEffect(() => {
     // Parse the query parameters from the URL
     const queryParams = new URLSearchParams(location.search);
     const state = queryParams.get('delete');
-    
+
     // Set the state based on the URL parameter
     if (state === 'true') {
       setOpen(true);
@@ -39,50 +44,56 @@ const DeleteDialog = ({ selected, setDeleteOpen }) => {
     }
   }, [location.search]);
 
-
   useEffect(() => {
     if (selected.length > 0) {
       setIsDeleteDisabled(false);
-    }
-    else {
+    } else {
       setIsDeleteDisabled(true);
     }
-  }, [selected.length])
+  }, [selected.length]);
 
-  const theme = useTheme();
-  const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    if (open) {
+      queryParams.set('delete', 'true');
+    } else {
+      queryParams.delete('delete');
+    }
+    // Ensure that existing URL parameters are preserved
+    navigate(`${location.pathname}?${queryParams.toString()}`, { replace: true });
+  }, [open, navigate, location.pathname, location.search]);
 
   const handleYes = async () => {
     try {
       const response = await fetch(`http://localhost:3000/api/cities/delete`, {
         method: 'DELETE',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({selected})
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ selected }),
       });
       if (response.ok) {
         const data = await response.json();
         console.log(data);
       }
     } catch (error) {
-        console.error('Error deleting selection: ', error);
+      console.error('Error deleting selection: ', error);
     }
     handleClose();
-  }
+  };
 
   const handleNo = () => {
     handleClose();
-  }
+  };
 
   return (
     <div>
       <Tooltip title="Delete">
         <span>
-          <IconButton 
+          <IconButton
             sx={{ color: 'red' }}
             disabled={isDeleteDisabled}
             onClick={handleOpen}
           >
-            <DeleteIcon/>
+            <DeleteIcon />
           </IconButton>
         </span>
       </Tooltip>
@@ -125,5 +136,6 @@ const DeleteDialog = ({ selected, setDeleteOpen }) => {
       </React.Fragment>
     </div>
   );
-}
+};
+
 export default DeleteDialog;

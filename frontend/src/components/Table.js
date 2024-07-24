@@ -12,7 +12,6 @@ import {
     Paper,
 } from "@mui/material";
 
-import EditRecordModal from "./EditRecordModal";
 import EnhancedTableHead from "./EnhancedTableHead";
 import EnhancedTableToolbar from "./EnhancedTableToolbar";
 import { fetchData, getComparator, stableSort } from "../helpers";
@@ -30,10 +29,11 @@ const TableMain = () => {
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [error, setError] = useState({});
     const [cityData, setCityData] = useState([]);
-    const [isAddOpen, setAddOpen] = useState();
+    const [isAddOpen, setAddOpen] = useState(false);
     const [initialLoad, setInitialLoad] = useState(true);
-    const [isEditOpen, setEditOpen] = useState();
-    const [isDeleteOpen, setDeleteOpen] = useState();
+    const [isEditOpen, setEditOpen] = useState(false);
+    const [isDeleteOpen, setDeleteOpen] = useState(false);
+
     const rows = cityData;
 
     const visibleRows = useMemo(
@@ -45,89 +45,63 @@ const TableMain = () => {
         [order, orderBy, page, rowsPerPage, rows]
     );
 
-    //initial api call to display the database in the table
+    // Initial API call to display the database in the table
     useEffect(() => {
         fetchData(`http://localhost:3000/api/cities`, setCityData, setError);
     }, []);
 
-    // URL state management for adding an entry
-    useEffect(() => {
-        const queryParams = new URLSearchParams(window.location.search);
-        if (isAddOpen === undefined) {
-            // Do nothing if isAddOpen is undefined. This prevents the value from automatically defaulting to false
-            return;
-        }
-        if (isAddOpen) {
-            queryParams.set("add", "true"); // Add the parameter if isAddOpen is true
-        } else {
-            queryParams.delete("add"); // Remove the parameter if isAddOpen is false
-        }
-        navigate(`?${queryParams.toString()}`, { replace: true });
-    }, [isAddOpen, navigate]);
-
+    // Handle initial load and URL state for selected rows
     useEffect(() => {
         if (initialLoad) {
             const queryParams = new URLSearchParams(location.search);
             const selectedParam = queryParams.get("selected");
+            const addParam = queryParams.get("add");
+            const editParam = queryParams.get("edit");
+            const deleteParam = queryParams.get("delete");
 
             if (selectedParam) {
-                const ids = selectedParam
-                    .split("_")
-                    .map((id) => parseInt(id, 10));
-                const validIds = ids.filter((id) =>
-                    rows.some((row) => row.id === id)
-                );
-                setSelected((prevSelected) => {
-                    const newSelected = [...prevSelected, ...validIds];
-                    return Array.from(new Set(newSelected));
-                });
+                const ids = selectedParam.split("_").map((id) => parseInt(id, 10));
+                setSelected(ids);
             }
+
+            setAddOpen(addParam === "true");
+            setEditOpen(editParam === "true");
+            setDeleteOpen(deleteParam === "true");
 
             setInitialLoad(false);
         }
-    }, [location.search, initialLoad, rows]);
+    }, [location.search, initialLoad]);
 
-    useEffect(() => {
-        if (!initialLoad) {
-            const queryParams = new URLSearchParams(location.search);
-
-            if (selected.length > 0) {
-                queryParams.set("selected", selected.join("_"));
-            } else {
-                queryParams.delete("selected");
-            }
-
-            navigate(`?${queryParams.toString()}`, { replace: true });
-        }
-    }, [selected, initialLoad, navigate, location.search]);
-
-    // URL state management for editing modal
+    // Consolidate URL parameter updates
     useEffect(() => {
         const queryParams = new URLSearchParams(location.search);
-        if (isEditOpen === undefined) {
-            return;
+
+        if (selected.length > 0) {
+            queryParams.set("selected", selected.join("_"));
+        } else {
+            queryParams.delete("selected");
         }
+
+        if (isAddOpen) {
+            queryParams.set("add", "true");
+        } else {
+            queryParams.delete("add");
+        }
+
         if (isEditOpen) {
-            queryParams.set("edit", "true"); // Add the parameter if isEditOpen is true
+            queryParams.set("edit", "true");
         } else {
-            queryParams.delete("edit"); // Remove the parameter if isEditOpen is false
+            queryParams.delete("edit");
         }
-        navigate(`?${queryParams.toString()}`, { replace: true });
-    }, [isEditOpen, location.search, navigate]);
 
-    //UR: state management for deleting selected rows
-    useEffect(() => {
-        const queryParams = new URLSearchParams(location.search);
-        if (isDeleteOpen === undefined) {
-            return;
-        }
         if (isDeleteOpen) {
-            queryParams.set("delete", "true"); // Add the parameter if isDeleteOpen is true
+            queryParams.set("delete", "true");
         } else {
-            queryParams.delete("delete"); // Remove the parameter if IsDeleteOpen is false
+            queryParams.delete("delete");
         }
+
         navigate(`?${queryParams.toString()}`, { replace: true });
-    }, [isDeleteOpen, location.search, navigate]);
+    }, [selected, isAddOpen, isEditOpen, isDeleteOpen, navigate, location.search]);
 
     const handleChangePage = (event, newPage) => {
         setPage(newPage);
@@ -150,9 +124,7 @@ const TableMain = () => {
 
     const handleClick = (event, id, updateURL = true) => {
         const selectedIndex = selected.indexOf(id);
-        const queryParams = new URLSearchParams(location.search);
-
-        let newSelected = [...selected];
+        const newSelected = [...selected];
 
         if (selectedIndex === -1) {
             newSelected.push(id);
@@ -160,7 +132,10 @@ const TableMain = () => {
             newSelected.splice(selectedIndex, 1);
         }
 
+        setSelected(newSelected);
+
         if (updateURL) {
+            const queryParams = new URLSearchParams(location.search);
             if (newSelected.length > 0) {
                 queryParams.set("selected", newSelected.join("_"));
             } else {
@@ -168,8 +143,6 @@ const TableMain = () => {
             }
             navigate(`?${queryParams.toString()}`, { replace: true });
         }
-
-        setSelected(newSelected);
     };
 
     const handleChangeRowsPerPage = (event) => {
