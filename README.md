@@ -18,6 +18,10 @@ Website to display, edit, add, & delete cities with their information.
     DB_NAME=<DB_NAME>
     ```
 
+- Install the required packages in both the backend and frontend folders.
+    
+    npm install
+
 ## Getting started
 After the previous setup steps you should be good to go, just start the backend and then the frontend server.
 
