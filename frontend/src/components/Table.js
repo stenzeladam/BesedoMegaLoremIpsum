@@ -58,6 +58,8 @@ const TableMain = () => {
             const addParam = queryParams.get("add");
             const editParam = queryParams.get("edit");
             const deleteParam = queryParams.get("delete");
+            const orderParam = queryParams.get("order");
+            const orderByParam = queryParams.get("orderBy");
 
             if (selectedParam) {
                 const ids = selectedParam.split("_").map((id) => parseInt(id, 10));
@@ -67,6 +69,13 @@ const TableMain = () => {
             setAddOpen(addParam === "true");
             setEditOpen(editParam === "true");
             setDeleteOpen(deleteParam === "true");
+
+            if (orderParam) {
+                setOrder(orderParam);
+            }
+            if (orderByParam) {
+                setOrderBy(orderByParam);
+            }
 
             setInitialLoad(false);
         }
@@ -100,8 +109,11 @@ const TableMain = () => {
             queryParams.delete("delete");
         }
 
+        queryParams.set("order", order);
+        queryParams.set("orderBy", orderBy);
+
         navigate(`?${queryParams.toString()}`, { replace: true });
-    }, [selected, isAddOpen, isEditOpen, isDeleteOpen, navigate, location.search]);
+    }, [selected, isAddOpen, isEditOpen, isDeleteOpen, order, orderBy, navigate, location.search]);
 
     const handleChangePage = (event, newPage) => {
         setPage(newPage);
@@ -115,7 +127,7 @@ const TableMain = () => {
 
     const handleSelectAllClick = (event) => {
         if (event.target.checked) {
-            const newSelected = rows.map((n) => n.CityID);
+            const newSelected = visibleRows.map((n) => n.CityID);
             setSelected(newSelected);
             return;
         }
@@ -183,7 +195,7 @@ const TableMain = () => {
                             orderBy={orderBy}
                             onSelectAllClick={handleSelectAllClick}
                             onRequestSort={handleRequestSort}
-                            rowCount={rows.length}
+                            rowCount={visibleRows.length} // Change this to the count of visible rows
                             className="table-header"
                         />
                         <TableBody>
