@@ -1,10 +1,18 @@
 .table-cell {
-    padding: 1rem;
+    padding: 0.5rem;
+    border-bottom: 1px solid #ddd;
+    border-right: 1px solid #ddd;
+    text-align: center;
+    box-sizing: border-box; 
 }
 
 .table-header {
-    padding: 1rem;
+    padding: 0.5rem;
     font-weight: bold;
+    text-align: center;
+    border-bottom: 2px solid #aaa;
+    border-right: 1px solid #aaa;
+    box-sizing: border-box; 
 }
 
 .table-container {
@@ -41,7 +49,7 @@
 }
 
 .table-row {
-    height: 5rem;
+    height: 3rem;
 }
 
 .table-cell-left {
@@ -49,4 +57,20 @@
     justify-content: flex-start;
     align-items: center;
     padding-left: 0.5rem;
+    border-bottom: 1px solid #ddd;
+    border-right: 1px solid #ddd;
+    box-sizing: border-box; 
+}
+
+.table-row:nth-of-type(even) {
+    background-color: #f9f9f9;
+}
+
+.table-row:last-of-type .table-cell {
+    border-bottom: none;
+}
+
+.table-cell:last-of-type,
+.table-header:last-of-type {
+    border-right: none; 
 }

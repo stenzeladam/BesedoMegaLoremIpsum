@@ -18,35 +18,34 @@ const headCells = [
     },
     {
         id: "CityName",
+        align: "left",
         numeric: false,
         label: "City Name",
     },
     {
         id: "District",
+        align: "left",
         numeric: false,
         label: "District",
     },
     {
         id: "CityPopulation",
+        align: "left",
         numeric: true,
         label: "Population",
     },
     {
         id: "CountryName",
+        align: "left",
         numeric: false,
         label: "Country",
     },
     {
         id: "Region",
+        align: "left",
         numeric: false,
         label: "Region",
     },
-    // {
-    //   id: 'edit_col',
-    //   align: 'right',
-    //   numeric: false,
-    //   label: 'Edit',
-    // }
 ];
 
 function EnhancedTableHead(props) {
@@ -82,9 +81,10 @@ function EnhancedTableHead(props) {
                 {headCells.map((headCell, index) => (
                     <TableCell
                         key={headCell.id}
-                        align={"right"}
+                        align={headCell.align}
                         padding={headCell.disablePadding ? "none" : "normal"}
                         sortDirection={orderBy === headCell.id ? order : false}
+                        className="table-header"
                     >
                         {index === 6 ? (
                             headCell.label

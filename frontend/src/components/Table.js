@@ -60,6 +60,8 @@ const TableMain = () => {
             const deleteParam = queryParams.get("delete");
             const orderParam = queryParams.get("order");
             const orderByParam = queryParams.get("orderBy");
+            const pageParam = queryParams.get("page");
+            const rowsPerPageParam = queryParams.get("rowsPerPage");
 
             if (selectedParam) {
                 const ids = selectedParam.split("_").map((id) => parseInt(id, 10));
@@ -76,10 +78,23 @@ const TableMain = () => {
             if (orderByParam) {
                 setOrderBy(orderByParam);
             }
+            if (pageParam) {
+                setPage(parseInt(pageParam, 10));
+            }
+            if (rowsPerPageParam) {
+                setRowsPerPage(parseInt(rowsPerPageParam, 10));
+            }
 
             setInitialLoad(false);
         }
     }, [location.search, initialLoad]);
+
+    // Ensure the page state is within the valid range
+    useEffect(() => {
+        if (page >= Math.ceil(rows.length / rowsPerPage)) {
+            setPage(0);
+        }
+    }, [rows, page, rowsPerPage]);
 
     // Consolidate URL parameter updates
     useEffect(() => {
@@ -111,9 +126,11 @@ const TableMain = () => {
 
         queryParams.set("order", order);
         queryParams.set("orderBy", orderBy);
+        queryParams.set("page", page);
+        queryParams.set("rowsPerPage", rowsPerPage);
 
         navigate(`?${queryParams.toString()}`, { replace: true });
-    }, [selected, isAddOpen, isEditOpen, isDeleteOpen, order, orderBy, navigate, location.search]);
+    }, [selected, isAddOpen, isEditOpen, isDeleteOpen, order, orderBy, page, rowsPerPage, navigate, location.search]);
 
     const handleChangePage = (event, newPage) => {
         setPage(newPage);
@@ -173,8 +190,8 @@ const TableMain = () => {
     }
 
     return (
-        <Box sx={{ margin: "2rem" }}>
-            <Paper sx={{ width: "100%", mb: 2 }}>
+        <Box sx={{ width: "100%" }}>
+            <Paper sx={{ width: "100%" }}>
                 <EnhancedTableToolbar
                     numSelected={selected.length}
                     selected={selected}
@@ -185,7 +202,7 @@ const TableMain = () => {
                 />
                 <TableContainer className="table-container">
                     <Table
-                        sx={{ minWidth: 750 }}
+                        sx={{ minWidth: 750, tableLayout: "fixed" }}
                         aria-labelledby="tableTitle"
                         size={"medium"}
                     >
@@ -220,6 +237,7 @@ const TableMain = () => {
                                         <TableCell
                                             className="table-cell col-id"
                                             padding="checkbox"
+                                            align="left"
                                         >
                                             <Checkbox
                                                 color="primary"
@@ -230,48 +248,36 @@ const TableMain = () => {
                                             />
                                         </TableCell>
                                         <TableCell
-                                            className="table-cell col-name"
+                                            className="table-cell col-id"
                                             component="th"
                                             id={labelId}
-                                            scope="row"
-                                            align="center"
                                         >
                                             {row.CityID}
                                         </TableCell>
                                         <TableCell
                                             className="table-cell col-name"
-                                            align="right"
                                         >
                                             {row.CityName}
                                         </TableCell>
                                         <TableCell
                                             className="table-cell col-district"
-                                            align="right"
                                         >
                                             {row.District}
                                         </TableCell>
                                         <TableCell
                                             className="table-cell col-population"
-                                            align="right"
                                         >
                                             {row.CityPopulation}
                                         </TableCell>
                                         <TableCell
                                             className="table-cell col-country"
-                                            align="right"
                                         >
                                             {row.CountryName}
                                         </TableCell>
                                         <TableCell
                                             className="table-cell col-region"
-                                            align="right"
                                         >
                                             {row.Region}
-                                        </TableCell>
-                                        <TableCell
-                                            className="table-cell-left col-actions"
-                                            padding="none"
-                                        >
                                         </TableCell>
                                     </TableRow>
                                 );

@@ -12,6 +12,8 @@ import CloseIcon from '@mui/icons-material/Close';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { Tooltip } from '@mui/material';
 import { useLocation, useNavigate } from 'react-router-dom';
+import Backdrop from '@mui/material/Backdrop';
+import Fade from './Fade';
 
 const DeleteDialog = ({ selected, setDeleteOpen }) => {
   const [open, setOpen] = useState(false);
@@ -59,9 +61,8 @@ const DeleteDialog = ({ selected, setDeleteOpen }) => {
     } else {
       queryParams.delete('delete');
     }
-    // Ensure that existing URL parameters are preserved
-    navigate(`${location.pathname}?${queryParams.toString()}`, { replace: true });
-  }, [open, navigate, location.pathname, location.search]);
+    navigate(`?${queryParams.toString()}`, { replace: true });
+  }, [open, navigate, location.search]);
 
   const handleYes = async () => {
     try {
@@ -102,36 +103,45 @@ const DeleteDialog = ({ selected, setDeleteOpen }) => {
           fullScreen={fullScreen}
           open={open}
           onClose={handleClose}
-          aria-labelledby="responsive-dialog-title"
+          slots={{ backdrop: Backdrop }}
+          slotProps={{
+            backdrop: {
+              TransitionComponent: Fade,
+            },
+          }}
         >
-          <IconButton
-            aria-label="close"
-            onClick={handleClose}
-            sx={{
-              position: 'absolute',
-              right: 8,
-              top: 8,
-              color: (theme) => theme.palette.grey[500],
-            }}
-          >
-            <CloseIcon />
-          </IconButton>
-          <DialogTitle id="responsive-dialog-title">
-            {"Delete selection?"}
-          </DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              Are you sure you want to delete the selected rows from the table?
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button autoFocus onClick={handleNo}>
-              No, don't delete
-            </Button>
-            <Button onClick={handleYes} autoFocus>
-              Yes, delete
-            </Button>
-          </DialogActions>
+          <Fade in={open}>
+            <div>
+              <IconButton
+                aria-label="close"
+                onClick={handleClose}
+                sx={{
+                  position: 'absolute',
+                  right: 8,
+                  top: 8,
+                  color: (theme) => theme.palette.grey[500],
+                }}
+              >
+                <CloseIcon />
+              </IconButton>
+              <DialogTitle id="responsive-dialog-title">
+                {"Delete selection?"}
+              </DialogTitle>
+              <DialogContent>
+                <DialogContentText>
+                  Are you sure you want to delete the selected rows from the table?
+                </DialogContentText>
+              </DialogContent>
+              <DialogActions>
+                <Button autoFocus onClick={handleNo}>
+                  No, don't delete
+                </Button>
+                <Button onClick={handleYes} autoFocus>
+                  Yes, delete
+                </Button>
+              </DialogActions>
+            </div>
+          </Fade>
         </Dialog>
       </React.Fragment>
     </div>
