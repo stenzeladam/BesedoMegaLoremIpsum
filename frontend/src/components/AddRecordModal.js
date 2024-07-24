@@ -28,11 +28,11 @@ const AddRowModal = ({setAddOpen}) => {
   const location = useLocation();
   
   useEffect(() => {
-    // Parse the query parameters from the URL
+    // reads parameters from the URL
     const queryParams = new URLSearchParams(location.search);
     const state = queryParams.get('add');
     
-    // Set the state based on the URL parameter
+    // sets the state based on URL parameters
     if (state === 'true') {
       setOpen(true);
     } else {
@@ -77,7 +77,7 @@ const AddRowModal = ({setAddOpen}) => {
     setCountry('');
     setRegion('');
     setError('');
-    handleClose(); // Close the modal
+    handleClose();
   };
 
   const handleClose = () => {

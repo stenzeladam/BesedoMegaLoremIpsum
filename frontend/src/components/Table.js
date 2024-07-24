@@ -22,17 +22,17 @@ const TableMain = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
-    const [order, setOrder] = useState("asc");
-    const [orderBy, setOrderBy] = useState("Population");
-    const [selected, setSelected] = useState([]);
-    const [page, setPage] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(10);
-    const [error, setError] = useState({});
-    const [cityData, setCityData] = useState([]);
-    const [isAddOpen, setAddOpen] = useState(false);
-    const [initialLoad, setInitialLoad] = useState(true);
-    const [isEditOpen, setEditOpen] = useState(false);
-    const [isDeleteOpen, setDeleteOpen] = useState(false);
+    const [order, setOrder] = useState("asc"); // State for sorting order
+    const [orderBy, setOrderBy] = useState("Population"); // State for sorting column
+    const [selected, setSelected] = useState([]); // State for selected rows
+    const [page, setPage] = useState(0); // State for current pagination page
+    const [rowsPerPage, setRowsPerPage] = useState(10); // State for rows per page
+    const [error, setError] = useState({}); // State for error handling
+    const [cityData, setCityData] = useState([]); // State for storing city data
+    const [isAddOpen, setAddOpen] = useState(false); // State for add modal
+    const [initialLoad, setInitialLoad] = useState(true); // State for initial load flag
+    const [isEditOpen, setEditOpen] = useState(false); // State for edit modal
+    const [isDeleteOpen, setDeleteOpen] = useState(false); // State for delete modal
 
     const rows = cityData;
 
@@ -89,14 +89,14 @@ const TableMain = () => {
         }
     }, [location.search, initialLoad]);
 
-    // Ensure the page state is within the valid range
+    // Ensures the page state is within the valid range
     useEffect(() => {
         if (page >= Math.ceil(rows.length / rowsPerPage)) {
             setPage(0);
         }
     }, [rows, page, rowsPerPage]);
 
-    // Consolidate URL parameter updates
+    // URL parameter updates
     useEffect(() => {
         const queryParams = new URLSearchParams(location.search);
 
@@ -132,16 +132,19 @@ const TableMain = () => {
         navigate(`?${queryParams.toString()}`, { replace: true });
     }, [selected, isAddOpen, isEditOpen, isDeleteOpen, order, orderBy, page, rowsPerPage, navigate, location.search]);
 
+    // Handle page change for pagination
     const handleChangePage = (event, newPage) => {
         setPage(newPage);
     };
 
+    // Handle sorting request
     const handleRequestSort = (event, property) => {
         const isAsc = orderBy === property && order === "asc";
         setOrder(isAsc ? "desc" : "asc");
         setOrderBy(property);
     };
 
+    // Handle select all rows
     const handleSelectAllClick = (event) => {
         if (event.target.checked) {
             const newSelected = visibleRows.map((n) => n.CityID);
@@ -151,6 +154,7 @@ const TableMain = () => {
         setSelected([]);
     };
 
+    // Handle row selection
     const handleClick = (event, id, updateURL = true) => {
         const selectedIndex = selected.indexOf(id);
         const newSelected = [...selected];
@@ -174,17 +178,19 @@ const TableMain = () => {
         }
     };
 
+    // Handle change in rows per page for pagination
     const handleChangeRowsPerPage = (event) => {
         setRowsPerPage(parseInt(event.target.value, 10));
         setPage(0);
     };
 
+    // Check if a row is selected
     const isSelected = (id) => selected.indexOf(id) !== -1;
 
-    // Avoid a layout jump when reaching the last page with empty rows.
-    const emptyRows =
-        page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
+    // Avoid a layout jump when reaching the last page with empty rows
+    const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
 
+    // Display error message if there is any
     if (error?.status) {
         return <div>{error?.message}</div>;
     }
@@ -212,7 +218,7 @@ const TableMain = () => {
                             orderBy={orderBy}
                             onSelectAllClick={handleSelectAllClick}
                             onRequestSort={handleRequestSort}
-                            rowCount={visibleRows.length} // Change this to the count of visible rows
+                            rowCount={visibleRows.length}
                             className="table-header"
                         />
                         <TableBody>
