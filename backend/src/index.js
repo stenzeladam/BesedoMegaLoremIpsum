@@ -12,10 +12,11 @@ app.use(function(req, res, next) {
     next();
 });
 
+// Comment the following lines regarding the port for unit tests
 const port = process.env.PORT || 3000;
-app.listen(port, () => {
+app.listen(port, () => {         
     console.log(`Listening on port ${port}`);
-}); // Start the server and log port info
+});
 
 // create a MySQL connection pool
 // credentials in an .env file
@@ -26,12 +27,11 @@ const pool = createPool({
     database: process.env.DB_NAME
 });
 
-// Route for the root URL
 app.get('/', (req, res) => {
-    res.send('Cities of the World')
+    res.send('Cities of the World');
 });
 
-// Route to fetch cities from the database
+// Route to get all cities from the database
 app.get('/api/cities', (req, res) => {
     pool.query(
         `SELECT 
@@ -44,29 +44,26 @@ app.get('/api/cities', (req, res) => {
          FROM world.city
          JOIN world.country
          ON world.city.CountryCode = world.country.Code
-         order by world.city.Population DESC;`, (err, citiesArray) => {
+         ORDER BY world.city.Population DESC;`, (err, citiesArray) => {
         if (err) {
             console.error(err);
-            res.status(500).send('500 Error: Internal Server Error');
+            return res.status(500).send('500 Error: Internal Server Error');
         }
-        res.send(citiesArray); //send the fetched cities data as a response
-        console.log('200 OK');
+        res.send(citiesArray);
     });
 });
 
-// Function to generate a random 3-character code for the country code
+// Utility function to generate a random country code
 function generateRandomCode() {
     let result = '';
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let counter = 0;
-    while (counter < 3) {
-      result += characters.charAt(Math.floor(Math.random() * characters.length));
-      counter += 1;
+    for (let i = 0; i < 3; i++) {
+        result += characters.charAt(Math.floor(Math.random() * characters.length));
     }
     return result;
 }
 
-// Function to check if the generated country code already exists in the database.
+// Utility function to check if a country code exists in the database
 function codeExists(code) {
     if (!code) {
         return Promise.resolve(false);
@@ -78,41 +75,36 @@ function codeExists(code) {
             (err, result) => {
                 if (err) {
                     console.error(err);
-                    return reject(false); 
+                    return reject(false);
                 }
-                if (result.length < 1) {
-                    resolve(false); // country code is not found
-                }
-                resolve(true); // country code is found
+                resolve(result.length > 0);
             }
-        )
-    }
-)}
+        );
+    });
+}
 
+// Function to insert a new country and city into the database
 async function insertCountry(cityName, district, population, country, region) {
-
-    let i = 0; // for max iterations in while loop
-    const newCode = generateRandomCode();
+    let newCode = generateRandomCode();
     let checkExists = await codeExists(newCode);
-    while(checkExists && i < 100) {
+    let i = 0;
+    while (checkExists && i < 100) {
         newCode = generateRandomCode();
         checkExists = await codeExists(newCode);
         i++;
-    } 
-    // Country code is unique, insert the country
+    }
     pool.query(
         `INSERT INTO world.country (Code, Name, Region) VALUES (?, ?, ?)`,
         [newCode, country, region],
-        (err, result) => {
+        (err) => {
             if (err) {
                 console.error(err);
                 return;
             }
-            // Insert the city
             pool.query(
                 `INSERT INTO world.city (Name, CountryCode, District, Population) VALUES (?, ?, ?, ?)`,
                 [cityName, newCode, district, population],
-                (err, result2) => {
+                (err) => {
                     if (err) {
                         console.error(err);
                     }
@@ -122,7 +114,8 @@ async function insertCountry(cityName, district, population, country, region) {
     );
 }
 
-app.post('/api/cities/add', (req, res) => {
+// Route to add a new city and country
+app.post('/api/cities/add', async (req, res) => {
     const { cityName, district, population, country, region } = req.body;
 
     if (!cityName || !district || !population || !country || !region) {
@@ -130,55 +123,52 @@ app.post('/api/cities/add', (req, res) => {
     }
 
     try {
-        insertCountry(cityName, district, population, country, region);
+        await insertCountry(cityName, district, population, country, region);
         res.status(200).send({ message: 'status 200: Successfully added data' });
     } catch (error) {
         console.error('Error adding the entry: ', error);
-        res.status(500).send({ message: '500 Error: Internal server error, could not add data' });
+        if (!res.headersSent) {
+            res.status(500).send({ message: '500 Error: Internal server error, could not add data' });
+        }
     }
 });
 
+// Utility function to check if a country is already in the database
 function isCountryInDatabase(country) {
     if (!country) {
-      return (false);
+        return false;
     }
     return new Promise((resolve, reject) => {
-      pool.query(
-        `SELECT 1 FROM world.country WHERE Name = ?`,
-        [country],
-        (err, result) => {
-          if (err) {
-            console.error(err);
-            return reject(false);
-          }
-          if (result.length > 0) {
-            resolve(true); // country is found
-          } 
-          else {
-            resolve(false); // country is not found
-          }
-        }
-      );
+        pool.query(
+            `SELECT 1 FROM world.country WHERE Name = ?`,
+            [country],
+            (err, result) => {
+                if (err) {
+                    console.error(err);
+                    return reject(false);
+                }
+                resolve(result.length > 0);
+            }
+        );
     });
 }
-  
 
+// Route to update an existing city and country or add a new one if the country does not exist
 app.put('/api/cities/edit', async (req, res) => {
-    const { 
-        CityID, 
-        CityName, 
-        District, 
-        CityPopulation, 
-        CountryName, 
-        Region 
-      } = req.body;
+    const {
+        CityID,
+        CityName,
+        District,
+        CityPopulation,
+        CountryName,
+        Region
+    } = req.body;
     if (!CityID || !CityName || !District || !CityPopulation || !CountryName || !Region) {
         return res.status(400).send('400 Bad Request: Incomplete data');
     }
     try {
         const exists = await isCountryInDatabase(CountryName);
         if (exists) {
-            //update the table
             pool.query(`
                 UPDATE world.city 
                 JOIN world.country 
@@ -191,93 +181,108 @@ app.put('/api/cities/edit', async (req, res) => {
                     world.country.Region = ?
                 WHERE 
                     world.city.ID = ?;`,
-                    [CityName, District, CityPopulation, CountryName, Region, CityID],
+                [CityName, District, CityPopulation, CountryName, Region, CityID],
                 (err) => {
                     if (err) {
                         console.error(err);
-                        res.status(500).send({ message: '500 Error: Internal Server Error' });
+                        if (!res.headersSent) {
+                            res.status(500).send({ message: '500 Error: Internal Server Error' });
+                        }
+                    } else {
+                        res.status(200).send({ message: '200 OK: Successfully edited' });
                     }
-                    else {
-                        res.status(200).send({ message: '200 OK: Successfully edited' })
-                    }
-                })
-        }
-        else {
-            let newCode = generateRandomCode(); // first, generate a new unique country code for this country
+                });
+        } else {
+            let newCode = generateRandomCode();
             let checkExists = await codeExists(newCode);
-            let i = 0
-            while(checkExists && i < 100) { // max iterations of 100
-                newCode = generateRandomCode(); // generate until you get a country code that doesn't already exist
+            let i = 0;
+            while (checkExists && i < 100) {
+                newCode = generateRandomCode();
                 checkExists = await codeExists(newCode);
                 i++;
             }
-            // Now that there is a unique country code, add the country and country code to the world.country table
             try {
-                insertCountry(CityName, District, CityPopulation, CountryName, Region);
-                deleteRowByCityID(CityID); // delete the old entry, as the new one will replace it
+                await insertCountry(CityName, District, CityPopulation, CountryName, Region);
+                deleteRowByCityID(CityID);
                 res.status(200).send({ message: 'status 200: Successfully edited/replaced data' });
             } catch (error) {
                 console.error('Error adding the entry: ', error);
-                res.status(500).send({ message: '500 Error: Internal server error, could not add data' });
+                if (!res.headersSent) {
+                    res.status(500).send({ message: '500 Error: Internal server error, could not add data' });
+                }
             }
         }
     } catch (error) {
         console.error('Error updating city and country:', error);
-        res.status(500).send('500 Internal Server Error: Could not update city and country');
+        if (!res.headersSent) {
+            res.status(500).send('500 Internal Server Error: Could not update city and country');
+        }
     }
 });
 
-function deleteRowByCityID (id) {
+// Function to delete a city by its ID
+async function deleteRowByCityID(id) {
     if (!id) {
-        console.log("Error 500: Undefined id")
-        return;
+        throw new Error("Undefined id");
     }
-    try {
+
+    return new Promise((resolve, reject) => {
         pool.query(
             `DELETE FROM world.city WHERE world.city.ID = ?`,
             [id],
-            (err) => {
+            (err, results) => {
                 if (err) {
-                    console.error(err);
-                    return;
+                    console.error('Error deleting city:', err);
+                    return reject(err); 
                 }
+                resolve(results); 
             }
-        )
-    } catch (error) {
-        console.error('Error deleting selection', error);
-        return;
-    }
+        );
+    });
 }
 
+// Route to delete selected cities
 app.delete('/api/cities/delete', async (req, res) => {
     const { selected } = req.body;
-    if (!selected) {
+
+    if (!selected || !Array.isArray(selected) || selected.length === 0) {
         return res.status(400).send({ message: '400 Error: No selection to delete' });
     }
 
     try {
-        for (let i = 0; i < selected.length; i++) {
-            let id = selected[i];
-            pool.query(
-                `DELETE FROM world.city WHERE world.city.ID = ?`,
-                [id],
-                (err) => {
-                    if (err) {
-                        console.error(err);
-                        res.status(500).send({ message: '500 Error: Internal Server Error' });
-                    }
-                }
-            )
-        }
+        // Create a list of promises for the delete operations
+        const deletePromises = selected.map(id => deleteRowByCityID(id));
+
+        // Wait for all delete operations to complete
+        await Promise.all(deletePromises);
+
         res.status(200).send({ message: '200 OK: Successfully deleted selection' });
-        console.log('200 OK');
     } catch (error) {
-        console.error('Error deleting selection', error);
+        console.error('Error deleting selection:', error);
         res.status(500).send({ message: '500 Error: Internal Server Error' });
-        return;
     }
 });
 
+// Catch-all route for handling 404 errors
 app.use((req, res) => {
     res.status(404).send('404 Error: Page Not Found');
 });
+
+// For testing purposes.
+const shutdown = async () => {
+    try {
+        await pool.end();
+        console.log('MySQL connection pool closed.');
+    } catch (err) {
+        console.error('Error closing MySQL connection pool:', err);
+    }
+};
+
+
+// Handle termination signals to gracefully shut down the server
+process.on('SIGTERM', shutdown);
+process.on('SIGINT', shutdown);
+
+
+// Export app and pool for testing purposes
+module.exports = { app, pool };
