@@ -1,7 +1,7 @@
 ## Introduction
 Website to display, edit, add, & delete cities with their information.
 
-## Prerequisits
+## Prerequisites
 - Make sure that you have `Node` & `MySQL` installed. 
 - The project includes a dump file called `world.sql`, running the contents of it in MySQL workbench would get you up and running quickly.
     
